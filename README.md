@@ -76,7 +76,7 @@ int bl602_bringup(void)
 
 # Change I2C Address and Device ID
 
-For testing, we change the I2C address and Device ID for BME280...
+For testing, we change the I2C Address and Device ID for BME280...
 
 https://github.com/lupyuen/incubator-nuttx/blob/bme280/drivers/sensors/bmp280.c#L45-L57
 
