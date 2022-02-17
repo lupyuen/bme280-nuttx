@@ -10,12 +10,12 @@ Will Apache NuttX OS talk I2C with Bosch BME280 Sensor? (Temperature + Humidity 
 
 Here's how we test BME280 with Bus Pirate...
 
-    | Bus Pirate Pin | BME280 Pin
-    |:---:|:---:
-    | __`MOSI`__ | `SDA`
-    | __`CLK`__ | `SCL`
-    | __`3.3V`__ | `3.3V`
-    | __`GND`__ | `GND`
+| Bus Pirate Pin | BME280 Pin
+|:---:|:---:
+| __`MOSI`__ | `SDA`
+| __`CLK`__ | `SCL`
+| __`3.3V`__ | `3.3V`
+| __`GND`__ | `GND`
 
 More details: https://lupyuen.github.io/articles/i2c#appendix-test-bme280-with-bus-pirate
 
