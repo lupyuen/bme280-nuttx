@@ -4,6 +4,21 @@
 
 Will Apache NuttX OS talk I2C with Bosch BME280 Sensor? (Temperature + Humidity + Air Pressure) ... Let's find out!
 
+# Test with Bus Pirate
+
+[__Bus Pirate__](http://dangerousprototypes.com/docs/Bus_Pirate) is a useful gadget for verifying whether our BME280 Sensor works OK. And for checking the I2C bytes that should be sent down the wire to BME280.
+
+Here's how we test BME280 with Bus Pirate...
+
+    | Bus Pirate Pin | BME280 Pin
+    |:---:|:---:
+    | __`MOSI`__ | `SDA`
+    | __`CLK`__ | `SCL`
+    | __`3.3V`__ | `3.3V`
+    | __`GND`__ | `GND`
+
+More details: https://lupyuen.github.io/articles/i2c#appendix-test-bme280-with-bus-pirate
+
 # Connect BME280
 
 Connect BME280 to Pine64 PineCone BL602...
@@ -120,10 +135,10 @@ NuttShell (NSH) NuttX-10.2.0-RC0
 nsh>
 ```
 
-TODO: Test BME280 with Bus Pirate
-
-https://lupyuen.github.io/articles/i2c#appendix-test-bme280-with-bus-pirate
-
 TODO: Probe BL602 I2C Port with Logic Analyser
 
 TODO: Log data transferred over I2C
+
+TODO: Port the BME280 Driver from Zephyr OS to NuttX
+
+https://github.com/zephyrproject-rtos/zephyr/blob/main/drivers/sensor/bme280/bme280.c
