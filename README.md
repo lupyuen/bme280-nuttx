@@ -1,10 +1,12 @@
 # Apache NuttX Driver for Bosch BME280 I2C Sensor (Temperature + Humidity + Air Pressure) ported from Zephyr OS
 
-TODO
+Will Apache NuttX OS talk I2C with Bosch BME280 Sensor? (Temperature + Humidity + Air Pressure) ... Let's find out!
 
 # Configure NuttX
 
-To configure NuttX for I2C...
+NuttX has a driver for BMP280 (Air Pressure only), let's test it with BME280.
+
+Configure NuttX for I2C to enable the I2C Character Driver, BMP280 Driver and BMP280 App...
 
 - System Type → BL602 Peripheral Support → I2C0
 - Device Drivers → I2C Driver Support
