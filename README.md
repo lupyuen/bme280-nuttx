@@ -95,3 +95,29 @@ https://github.com/lupyuen/incubator-nuttx/blob/bme280/drivers/sensors/bmp280.c#
 # TODO
 
 Returned device ID is 0. Why???
+
+```text
+gpio_pin_register: Registering /dev/gpio0
+gpio_pin_register: Registering /dev/gpio1
+gpint_enable: Disable the interrupt
+gpio_pin_register: Registering /dev/gpio2
+bl602_gpio_set_intmod: ****gpio_pin=115, int_ctlmod=1, int_trgmod=0
+bl602_spi_setfrequency: frequency=400000, actual=0
+bl602_spi_setbits: nbits=8
+bl602_spi_setmode: mode=0
+spi_test_driver_register: devpath=/dev/spitest0, spidev=0
+bl602_spi_select: devid: 0, CS: free
+bl602_i2c_transfer: i2c transfer success
+bl602_i2c_transfer: i2c transfer success
+bmp280_checkid: devid: 0x00
+bmp280_checkid: Wrong Device ID! 00
+bmp280_register: Failed to register driver: -19
+bl602_bringup: ERROR: Failed to register BMP280
+
+NuttShell (NSH) NuttX-10.2.0-RC0
+nsh>
+```
+
+TODO: Test BME280 with Bus Pirate
+
+TODO: Probe BL602 I2C Port with Logic Analyser
