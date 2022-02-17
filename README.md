@@ -2,6 +2,17 @@
 
 Will Apache NuttX OS talk I2C with Bosch BME280 Sensor? (Temperature + Humidity + Air Pressure) ... Let's find out!
 
+# Connect BME280
+
+Connect BME280 to Pine64 PineCone BL602...
+
+| BL602 Pin | BME280 Pin | Wire Colour
+|:---:|:---:|:---|
+| __`GPIO 3`__ | `SDA` | Green 
+| __`GPIO 4`__ | `SCL` | Blue
+| __`3V3`__ | `3.3V` | Red
+| __`GND`__ | `GND` | Black
+
 # Configure NuttX
 
 NuttX has a driver for BMP280 (Air Pressure only), let's test it with BME280.
@@ -60,3 +71,27 @@ int bl602_bringup(void)
     }
 #endif /* CONFIG_SENSORS_BMP280 */
 ```
+
+# Change I2C Address and Device ID
+
+For testing, we change the I2C address and Device ID for BME280...
+
+https://github.com/lupyuen/incubator-nuttx/blob/bme280/drivers/sensors/bmp280.c#L45-L57
+
+```c
+////  Previously: I2C Address of BMP280
+////  #define BMP280_ADDR         0x76
+
+#warning Testing: I2C Address of BME280
+#define BMP280_ADDR         0x77 //// BME280
+
+////  Previously: Device ID of BMP280
+////  #define DEVID               0x58
+
+#warning Testing: Device ID of BME280
+#define DEVID               0x60 //// BME260
+```
+
+# TODO
+
+Returned device ID is 0. Why???
