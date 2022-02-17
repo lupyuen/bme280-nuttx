@@ -123,3 +123,5 @@ nsh>
 TODO: Test BME280 with Bus Pirate
 
 TODO: Probe BL602 I2C Port with Logic Analyser
+
+TODO: Log data transferred over I2C
