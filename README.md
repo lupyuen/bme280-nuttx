@@ -30,6 +30,30 @@ Connect BME280 to Pine64 PineCone BL602...
 | __`3V3`__ | `3.3V` | Red
 | __`GND`__ | `GND` | Black
 
+The I2C Pins on BL602 are defined here...
+
+https://github.com/lupyuen/incubator-nuttx/blob/bme280/boards/risc-v/bl602/bl602evb/include/board.h#L85-L88
+
+```c
+/* I2C Configuration */
+
+#define BOARD_I2C_SCL (GPIO_INPUT | GPIO_PULLUP | GPIO_FUNC_I2C | GPIO_PIN4)
+#define BOARD_I2C_SDA (GPIO_INPUT | GPIO_PULLUP | GPIO_FUNC_I2C | GPIO_PIN3)
+```
+
+We disabled the UART1 Port because it uses the same pins as I2C...
+
+https://github.com/lupyuen/incubator-nuttx/blob/bme280/boards/risc-v/bl602/bl602evb/include/board.h#L63-L68
+
+```c
+#ifdef TODO  /* Remember to check for duplicate pins! */
+#define BOARD_UART_1_RX_PIN (GPIO_INPUT | GPIO_PULLUP | \
+                              GPIO_FUNC_UART | GPIO_PIN3)
+#define BOARD_UART_1_TX_PIN (GPIO_INPUT | GPIO_PULLUP | \
+                              GPIO_FUNC_UART | GPIO_PIN4)
+#endif  /* TODO */
+```
+
 # Configure NuttX
 
 NuttX has a driver for BMP280 (Air Pressure only), let's test it with BME280.
