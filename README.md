@@ -91,7 +91,7 @@ https://github.com/lupyuen/incubator-nuttx/blob/bme280/drivers/sensors/bmp280.c#
 ////  #define DEVID               0x58
 
 #warning Testing: Device ID of BME280
-#define DEVID               0x60 //// BME260
+#define DEVID               0x60 //// BME280
 ```
 
 # TODO
