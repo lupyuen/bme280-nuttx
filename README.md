@@ -54,6 +54,10 @@ https://github.com/lupyuen/incubator-nuttx/blob/bme280/boards/risc-v/bl602/bl602
 #endif  /* TODO */
 ```
 
+We're using the SparkFun BME280 Breakout Board, which has Pull-Up Resistors (so we don't need to add our own)...
+
+https://learn.sparkfun.com/tutorials/sparkfun-bme280-breakout-hookup-guide/all
+
 # Configure NuttX
 
 NuttX has a driver for BMP280 (Air Pressure only), let's test it with BME280.
