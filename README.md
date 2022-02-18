@@ -202,6 +202,8 @@ TODO
 
 NuttX BMP280 Driver loads OK on BL602 ... After setting the Register ID as I2C Sub Address! 🎉
 
+NuttX BMP280 Driver appears as "/dev/sensor/baro0"
+
 ```text
 gpio_pin_register: Registering /dev/gpio0
 gpio_pin_register: Registering /dev/gpio1
