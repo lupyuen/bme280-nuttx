@@ -231,9 +231,36 @@ BL602 has a peculiar I2C Port ... We need to send the I2C Sub Address (Register 
 
 https://lupyuen.github.io/articles/i2c#set-i2c-device-address-and-register-address
 
-BL602 NuttX I2C Driver needs us to provide the I2C Sub Address ... Let's patch the BMP280 Driver to pass the Register ID as I2C Sub Address
+BL602 NuttX I2C Driver needs us to provide the I2C Sub Address (Register ID)...
 
-https://github.com/lupyuen/incubator-nuttx/blob/bme280/drivers/sensors/bmp280.c#L202-L214
+https://github.com/lupyuen/incubator-nuttx/blob/bme280/arch/risc-v/src/bl602/bl602_i2c.c#L719-L738
+
+```c
+      /* if msgs[i].flag I2C_M_NOSTOP,means start i2c with subddr */
+
+      if (msgs[i].flags & I2C_M_NOSTOP)
+        {
+          priv->subflag = 1;
+          priv->subaddr = 0;
+          for (j = 0; j < msgs[i].length; j++)
+            {
+              priv->subaddr += msgs[i].buffer[j] << (j * 8);
+            }
+
+          priv->sublen = msgs[i].length;
+          i++;
+        }
+      else
+        {
+          priv->subflag = 0;
+          priv->subaddr = 0;
+          priv->sublen  = 0;
+        }
+```
+
+Here's how we patch the #NuttX BMP280 Driver to send the Register ID as I2C Sub Address (instead of I2C Data)
+
+https://github.com/lupyuen/incubator-nuttx/blob/bme280/drivers/sensors/bmp280.c#L202-L216
 
 ```c
 static uint8_t bmp280_getreg8(FAR struct bmp280_dev_s *priv, uint8_t regaddr)
@@ -243,6 +270,9 @@ static uint8_t bmp280_getreg8(FAR struct bmp280_dev_s *priv, uint8_t regaddr)
 
   #warning Testing: I2C_M_NOSTOP for I2C Sub Address
   msg[0].flags     = I2C_M_NOSTOP;  ////  Testing I2C Sub Address
+
+  msg[0].buffer    = &regaddr;
+  msg[0].length    = 1;
 ```
 
 # BMP280 Driver Loads OK
