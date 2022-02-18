@@ -165,7 +165,24 @@ NuttShell (NSH) NuttX-10.2.0-RC0
 nsh>
 ```
 
-TODO: Probe BL602 I2C Port with Logic Analyser
+# Invalid Register ID
+
+Logic Analyser shows that BL602 sent the wrong Register ID to BME280.
+
+To read the Device ID, the Register ID should be `0xD0`, not `0x00`.  Let's fix this 🤔
+
+```text
+Write [0xEE]
+0x00 + ACK (Register ID is 0x00)
+Read [0xEF]
+0x00 + NAK (No Acknowledgement, because Register ID is incorrect)
+```
+
+![Invalid Register ID](https://lupyuen.github.io/images/bme280-logic.png)
+
+[(Here's why Register ID should be `0xD0`)](https://lupyuen.github.io/articles/i2c#appendix-test-bme280-with-bus-pirate)
+
+# TODO
 
 TODO: Log data transferred over I2C
 
