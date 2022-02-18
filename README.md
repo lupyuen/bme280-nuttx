@@ -141,7 +141,7 @@ https://github.com/lupyuen/incubator-nuttx/blob/bme280/drivers/sensors/bmp280.c#
 
 # Invalid Device ID
 
-Returned device ID is 0. Why???
+BMP280 Driver fails because the detected Device ID is 0 ... Let's find out why 🤔
 
 ```text
 gpio_pin_register: Registering /dev/gpio0
