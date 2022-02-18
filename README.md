@@ -182,9 +182,74 @@ Read [0xEF]
 
 [(Here's why Register ID should be `0xD0`)](https://lupyuen.github.io/articles/i2c#appendix-test-bme280-with-bus-pirate)
 
-# TODO
+# Log I2C Transfers
 
-TODO: Log data transferred over I2C
+BL602 NuttX I2C Driver doesn't log the data transferred ... Let's log ourselves
+
+TODO
+
+# Set I2C Sub Address
+
+TODO
+
+# BMP280 Driver Loads OK
+
+```text
+▒gpio_pin_register: Registering /dev/gpio0
+gpio_pin_register: Registering /dev/gpio1
+gpint_enable: Disable the interrupt
+gpio_pin_register: Registering /dev/gpio2
+bl602_gpio_set_intmod: ****gpio_pin=115, int_ctlmod=1, int_trgmod=0
+bl602_spi_setfrequency: frequency=400000, actual=0
+bl602_spi_setbits: nbits=8
+bl602_spi_setmode: mode=0
+spi_test_driver_register: devpath=/dev/spitest0, spidev=0
+bl602_spi_select: devid: 0, CS: free
+bl602_i2c_transfer: subflag=1, subaddr=0xd0, sulen=1
+bl602_i2c_recvdata: count=1, temp=0x60
+bl602_i2c_transfer: i2c transfer success
+bmp280_checkid: devid: 0x60
+bl602_i2c_transfer: subflag=0, subaddr=0x0, sublen=0
+bl602_i2c_send_data: count=1, temp=0x88
+bl602_i2c_transfer: i2c transfer success
+bl602_i2c_transfer: subflag=0, subaddr=0x0, sublen=0
+bl602_i2c_transfer: i2c trbl602_i2c_recvdata: count=24, temp=0x65e66e97
+bl602_i2c_recvdata: count=20, temp=0x8f990032
+bl602_i2c_recvdata: count=16, temp=0xbd0d581
+bl602_i2c_recvdata: count=12, temp=0xffdb1e71
+ansfer success
+bmp280_initialize: T1 = 28311
+bmp280_initialize: T2 = 26086
+bmp280_initialize: T3 = 50
+bmp280_initialize: P1 = 36761
+bmp280_initialize: P2 = -10879
+bmp280_initialize: P3 = 3024
+bmp280_initialize: P4 = 7793
+bmp280_initialize: P5 = -37
+bmp280_initialize: P6 = -18608
+bmp280_initialize: P7 = 16897
+bmp280_initialize: P8 = 12336
+bmp280_initialize: P9 = 8964
+bl602_i2c_transfer: subflag=0, subaddr=0x0, sublen=0
+bl602_i2c_send_data: count=2, temp=0xf4
+bl602_i2c_transfer: i2c transfer success
+bl602_i2c_transfer: subflag=1, subaddr=0xf5, sublen=1
+bl602_i2c_transfer: i2cbl602_i2c_recvdata: count=1, temp=0x10bdd800
+ transfer success
+bl602_i2c_transfer: subflag=0, subaddr=0x0, sublen=0
+bl602_i2c_send_data: count=2, temp=0xf5
+bl602_i2c_transfer: i2c transfer success
+bl602_i2c_transfer: subflag=1, subaddr=0xf5, sublen=1
+bl602_i2c_transfer: i2bl602_i2c_recvdata: count=1, temp=0x10bdd800
+c transfer success
+sensor_custom_register: Registering /dev/sensor/baro0
+bmp280_register: BMP280 driver loaded successfully!
+
+NuttShell (NSH) NuttX-10.2.0-RC0
+nsh>
+```
+
+# TODO
 
 TODO: Port the BME280 Driver from Zephyr OS to NuttX
 
