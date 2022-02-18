@@ -190,12 +190,20 @@ TODO
 
 # Set I2C Sub Address
 
+BL602 has a peculiar I2C Port ... We need to send the I2C Sub Address (Register ID) separately from the I2C Data ... This might cause the BMP280 Driver to fail
+
+https://lupyuen.github.io/articles/i2c#set-i2c-device-address-and-register-address
+
+BL602 NuttX I2C Driver needs us to provide the I2C Sub Address ... Let's patch the BMP280 Driver to pass the Register ID as I2C Sub Address
+
 TODO
 
 # BMP280 Driver Loads OK
 
+NuttX BMP280 Driver loads OK on BL602 ... After setting the Register ID as I2C Sub Address! 🎉
+
 ```text
-▒gpio_pin_register: Registering /dev/gpio0
+gpio_pin_register: Registering /dev/gpio0
 gpio_pin_register: Registering /dev/gpio1
 gpint_enable: Disable the interrupt
 gpio_pin_register: Registering /dev/gpio2
@@ -246,6 +254,24 @@ sensor_custom_register: Registering /dev/sensor/baro0
 bmp280_register: BMP280 driver loaded successfully!
 
 NuttShell (NSH) NuttX-10.2.0-RC0
+nsh>
+nsh> ls /dev
+/dev:
+ console
+ gpio0
+ gpio1
+ gpio2
+ i2c0
+ null
+ sensor/
+ spi0
+ spitest0
+ timer0
+ urandom
+ zero
+nsh> ls /dev/sensor
+/dev/sensor:
+ baro0
 nsh>
 ```
 
