@@ -139,7 +139,7 @@ https://github.com/lupyuen/incubator-nuttx/blob/bme280/drivers/sensors/bmp280.c#
 #define DEVID               0x60 //// BME280
 ```
 
-# TODO
+# Invalid Device ID
 
 Returned device ID is 0. Why???
 
