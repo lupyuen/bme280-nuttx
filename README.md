@@ -258,9 +258,9 @@ https://github.com/lupyuen/incubator-nuttx/blob/bme280/arch/risc-v/src/bl602/bl6
         }
 ```
 
-Here's how we patch the #NuttX BMP280 Driver to send the Register ID as I2C Sub Address (instead of I2C Data)
+Here's how we patch the NuttX BMP280 Driver to send the Register ID as I2C Sub Address (instead of I2C Data)
 
-https://github.com/lupyuen/incubator-nuttx/blob/bme280/drivers/sensors/bmp280.c#L202-L216
+https://github.com/lupyuen/incubator-nuttx/blob/bme280/drivers/sensors/bmp280.c#L202-L217
 
 ```c
 static uint8_t bmp280_getreg8(FAR struct bmp280_dev_s *priv, uint8_t regaddr)
