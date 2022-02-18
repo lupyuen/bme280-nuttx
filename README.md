@@ -186,7 +186,44 @@ Read [0xEF]
 
 BL602 NuttX I2C Driver doesn't log the data transferred ... Let's log ourselves
 
-TODO
+https://github.com/lupyuen/incubator-nuttx/blob/bme280/arch/risc-v/src/bl602/bl602_i2c.c#L194-L197
+
+```c
+static void bl602_i2c_send_data(struct bl602_i2c_priv_s *priv)
+{
+  ...
+  putreg32(temp, BL602_I2C_FIFO_WDATA);
+  priv->bytes += count;
+  i2cinfo("count=%d, temp=0x%x\n", count, temp); ////
+}
+```
+
+https://github.com/lupyuen/incubator-nuttx/blob/bme280/arch/risc-v/src/bl602/bl602_i2c.c#L207-L216
+
+```c
+static void bl602_i2c_recvdata(struct bl602_i2c_priv_s *priv)
+{
+  ...
+  count = msg->length - priv->bytes;
+  temp  = getreg32(BL602_I2C_FIFO_RDATA);
+  i2cinfo("count=%d, temp=0x%x\n", count, temp); ////
+```
+
+https://github.com/lupyuen/incubator-nuttx/blob/bme280/arch/risc-v/src/bl602/bl602_i2c.c#L740-L742
+
+```c
+static int bl602_i2c_transfer(struct i2c_master_s *dev,
+                              struct i2c_msg_s *   msgs,
+                              int                      count)
+{
+  ...
+  for (i = 0; i < count; i++)
+    {
+      ...
+      priv->msgid = i;
+      i2cinfo("subflag=%d, subaddr=0x%x, sublen=%d\n", priv->subflag, priv->subaddr, priv->sublen); ////
+      bl602_i2c_start_transfer(priv);
+```
 
 # Set I2C Sub Address
 
@@ -196,7 +233,17 @@ https://lupyuen.github.io/articles/i2c#set-i2c-device-address-and-register-addre
 
 BL602 NuttX I2C Driver needs us to provide the I2C Sub Address ... Let's patch the BMP280 Driver to pass the Register ID as I2C Sub Address
 
-TODO
+https://github.com/lupyuen/incubator-nuttx/blob/bme280/drivers/sensors/bmp280.c#L202-L214
+
+```c
+static uint8_t bmp280_getreg8(FAR struct bmp280_dev_s *priv, uint8_t regaddr)
+{
+  ...
+  //// Previously msg[0].flags     = 0;
+
+  #warning Testing: I2C_M_NOSTOP for I2C Sub Address
+  msg[0].flags     = I2C_M_NOSTOP;  ////  Testing I2C Sub Address
+```
 
 # BMP280 Driver Loads OK
 
