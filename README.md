@@ -354,6 +354,12 @@ nsh> ls /dev/sensor
 nsh>
 ```
 
+# Run Sensor Test App
+
+https://github.com/lupyuen/incubator-nuttx-apps/blob/bme280/testing/sensortest/sensortest.c#L82
+
+TODO
+
 # TODO
 
 TODO: Port the BME280 Driver from Zephyr OS to NuttX
