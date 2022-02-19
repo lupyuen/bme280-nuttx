@@ -411,7 +411,7 @@ nsh>
 
 # Run Sensor Test App
 
-Let's run the NuttX Sensor Test App...
+Let's run the NuttX Sensor Test App to read the sensor values from "/dev/sensor/baro0"...
 
 https://github.com/lupyuen/incubator-nuttx-apps/blob/bme280/testing/sensortest/sensortest.c
 
