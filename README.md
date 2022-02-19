@@ -512,6 +512,10 @@ SensorTest: Received message: baro0, number:10/10
 nsh>
 ```
 
+That's 1006.24 millibar and 30.8 °C. Yep that looks reasonable for Sunny Singapore by the Seaside 👍
+
+(Air Pressue at Sea Level is 1013.25 millibar)
+
 Detailed log...
 
 ```text
