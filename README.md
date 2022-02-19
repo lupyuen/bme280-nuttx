@@ -296,7 +296,7 @@ static int bmp280_getregs(FAR struct bmp280_dev_s *priv, uint8_t regaddr,
   msg[0].length    = 1;
 ```
 
-TODO:
+We don't need to set the I2C Sub Address when writing registers...
 
 https://github.com/lupyuen/incubator-nuttx/blob/bme280/drivers/sensors/bmp280.c#L286-L300
 
@@ -549,6 +549,19 @@ bl602_i2c_transfer: subflag=0, subaddr=0x0, sublen=0
 bl602_i2c_send_data: count=2, temp=0xf4
 bl602_i2c_transfer: i2c transfer success
 nsh>
+```
+
+This shows that writing to I2C Registers is working OK...
+
+```text
+## Register F5 has value 00
+bmp280_getreg8: regaddr=0xf5, regval=0x00
+...
+## Set Register F5 to value A0
+bmp280_putreg8: regaddr=0xf5, regval=0xa0
+...
+## Register F5 now has value A0
+bmp280_getreg8: regaddr=0xf5, regval=0xa0
 ```
 
 # TODO
