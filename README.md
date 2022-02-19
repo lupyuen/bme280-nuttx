@@ -425,6 +425,97 @@ Read 10 sensor values from "/dev/sensor/baro0"...
 
 ```text
 nsh> sensortest -n 10 baro0
+SensorTest: Test /dev/sensor/baro0 with interval(1000000us), latency(0us)
+baro0: timestamp:30680000 value1:674.93 value2:22.18
+baro0: timestamp:30680000 value1:674.93 value2:22.18
+baro0: timestamp:30680000 value1:674.93 value2:22.18
+baro0: timestamp:30680000 value1:674.93 value2:22.18
+baro0: timestamp:30680000 value1:674.93 value2:22.18
+baro0: timestamp:30690000 value1:674.93 value2:22.18
+baro0: timestamp:30690000 value1:674.93 value2:22.18
+baro0: timestamp:30690000 value1:674.93 value2:22.18
+baro0: timestamp:30690000 value1:1006.21 value2:30.78
+baro0: timestamp:30690000 value1:1006.21 value2:30.78
+SensorTest: Received message: baro0, number:10/10
+bl602_i2c_transfer: i2c transfer error, event = 4
+
+nsh> sensortest -n 10 baro0
+SensorTest: Test /dev/sensor/baro0 with interval(1000000us), latency(0us)
+baro0: timestamp:61290000 value1:1006.27 value2:30.80
+baro0: timestamp:61300000 value1:1006.27 value2:30.80
+baro0: timestamp:61300000 value1:1006.27 value2:30.80
+baro0: timestamp:61300000 value1:1006.27 value2:30.80
+baro0: timestamp:61300000 value1:1006.27 value2:30.80
+baro0: timestamp:61300000 value1:1006.27 value2:30.80
+baro0: timestamp:61300000 value1:1006.27 value2:30.80
+baro0: timestamp:61300000 value1:1006.27 value2:30.80
+baro0: timestamp:61310000 value1:1006.27 value2:30.80
+baro0: timestamp:61310000 value1:1006.27 value2:30.80
+SensorTest: Received message: baro0, number:10/10
+bl602_i2c_transfer: i2c transfer error, event = 4
+
+nsh> sensortest -n 10 baro0
+SensorTest: Test /dev/sensor/baro0 with interval(1000000us), latency(0us)
+baro0: timestamp:79360000 value1:1006.22 value2:30.80
+baro0: timestamp:79360000 value1:1006.22 value2:30.80
+baro0: timestamp:79360000 value1:1006.22 value2:30.80
+baro0: timestamp:79370000 value1:1006.22 value2:30.80
+baro0: timestamp:79370000 value1:1006.22 value2:30.80
+baro0: timestamp:79370000 value1:1006.22 value2:30.80
+baro0: timestamp:79370000 value1:1006.22 value2:30.80
+baro0: timestamp:79370000 value1:1006.22 value2:30.80
+baro0: timestamp:79370000 value1:1006.22 value2:30.80
+baro0: timestamp:79370000 value1:1006.22 value2:30.80
+SensorTest: Received message: baro0, number:10/10
+
+nsh> sensortest -n 10 baro0
+SensorTest: Test /dev/sensor/baro0 with interval(1000000us), latency(0us)
+baro0: timestamp:82370000 value1:1006.30 value2:30.81
+baro0: timestamp:82370000 value1:1006.30 value2:30.81
+baro0: timestamp:82380000 value1:1006.30 value2:30.81
+baro0: timestamp:82380000 value1:1006.30 value2:30.81
+baro0: timestamp:82380000 value1:1006.30 value2:30.81
+baro0: timestamp:82380000 value1:1006.30 value2:30.81
+baro0: timestamp:82380000 value1:1006.30 value2:30.81
+baro0: timestamp:82380000 value1:1006.30 value2:30.81
+baro0: timestamp:82380000 value1:1006.30 value2:30.81
+baro0: timestamp:82380000 value1:1006.30 value2:30.81
+SensorTest: Received message: baro0, number:10/10
+
+nsh> sensortest -n 10 baro0
+SensorTest: Test /dev/sensor/baro0 with interval(1000000us), latency(0us)
+baro0: timestamp:83950000 value1:1006.30 value2:30.79
+baro0: timestamp:83950000 value1:1006.30 value2:30.79
+baro0: timestamp:83950000 value1:1006.30 value2:30.79
+baro0: timestamp:83960000 value1:1006.30 value2:30.79
+baro0: timestamp:83960000 value1:1006.30 value2:30.79
+baro0: timestamp:83960000 value1:1006.30 value2:30.79
+baro0: timestamp:83960000 value1:1006.30 value2:30.79
+baro0: timestamp:83960000 value1:1006.30 value2:30.79
+baro0: timestamp:83960000 value1:1006.30 value2:30.79
+baro0: timestamp:83960000 value1:1006.30 value2:30.79
+SensorTest: Received message: baro0, number:10/10
+
+nsh> sensortest -n 10 baro0
+SensorTest: Test /dev/sensor/baro0 with interval(1000000us), latency(0us)
+baro0: timestamp:85310000 value1:1006.24 value2:30.80
+baro0: timestamp:85310000 value1:1006.24 value2:30.80
+baro0: timestamp:85320000 value1:1006.24 value2:30.80
+baro0: timestamp:85320000 value1:1006.24 value2:30.80
+baro0: timestamp:85320000 value1:1006.24 value2:30.80
+baro0: timestamp:85320000 value1:1006.24 value2:30.80
+baro0: timestamp:85320000 value1:1006.24 value2:30.80
+baro0: timestamp:85320000 value1:1006.24 value2:30.80
+baro0: timestamp:85320000 value1:1006.24 value2:30.80
+baro0: timestamp:85320000 value1:1006.24 value2:30.80
+SensorTest: Received message: baro0, number:10/10
+nsh>
+```
+
+Detailed log...
+
+```text
+nsh> sensortest -n 10 baro0
 
 sensor_ioctl: cmd=a81 arg=4201c384
 bmp280_getreg8: regaddr=0xf5
@@ -551,7 +642,7 @@ bl602_i2c_transfer: i2c transfer success
 nsh>
 ```
 
-This shows that writing to I2C Registers is working OK...
+This shows that writing to I2C Registers works OK...
 
 ```text
 ## Register F5 has value 00
@@ -564,7 +655,9 @@ bmp280_putreg8: regaddr=0xf5, regval=0xa0
 bmp280_getreg8: regaddr=0xf5, regval=0xa0
 ```
 
-# TODO
+Yep the NuttX BMP280 Driver works OK! Now let's port the BME280 Driver from Zephyr OS to NuttX.
+
+# Port BME280 Driver from Zephyr OS
 
 TODO: Port the BME280 Driver from Zephyr OS to NuttX
 
