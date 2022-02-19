@@ -659,7 +659,7 @@ bmp280_putreg8: regaddr=0xf5, regval=0xa0
 bmp280_getreg8: regaddr=0xf5, regval=0xa0
 ```
 
-Yep the NuttX BMP280 Driver works OK! Now let's port the BME280 Driver from Zephyr OS to NuttX.
+Yep the NuttX BMP280 Driver works OK! Now let's port the BME280 Driver from Zephyr OS to NuttX, so we can get the humidity.
 
 # Port BME280 Driver from Zephyr OS
 
