@@ -332,10 +332,15 @@ bl602_spi_setbits: nbits=8
 bl602_spi_setmode: mode=0
 spi_test_driver_register: devpath=/dev/spitest0, spidev=0
 bl602_spi_select: devid: 0, CS: free
+
+bmp280_getreg8: regaddr=0xd0
 bl602_i2c_transfer: subflag=1, subaddr=0xd0, sublen=1
 bl602_i2c_recvdata: count=1, temp=0x60
 bl602_i2c_transfer: i2c transfer success
+bmp280_getreg8: regaddr=0xd0, regval=0x60
 bmp280_checkid: devid: 0x60
+
+bmp280_getregs: regaddr=0x88, length=24
 bl602_i2c_transfer: subflag=1, subaddr=0x88, sublen=1
 bl602_i2c_recvdata: count=24, temp=0x65e66e97
 bl602_i2c_recvdata: count=20, temp=0x8f990032
@@ -343,6 +348,7 @@ bl602_i2c_recvdata: count=16, temp=0xbd0d581
 bl602_i2c_recvdata: count=12, temp=0xffdb1e71
 bl602_i2c_recvdata: count=8, temp=0x26acfff9
 bl602_i2c_transfer: i2c transfer success
+
 bmp280_initialize: T1 = 28311
 bmp280_initialize: T2 = 26086
 bmp280_initialize: T3 = 50
@@ -353,22 +359,31 @@ bmp280_initialize: P4 = 7793
 bmp280_initialize: P5 = -37
 bmp280_initialize: P6 = -7
 bmp280_initialize: P7 = 9900
-bmp280_initialize: P8 = 15176
+bmp280_initialize: P8 = 15288
 bmp280_initialize: P9 = 8964
+
 bmp280_putreg8: regaddr=0xf4, regval=0x00
 bl602_i2c_transfer: subflag=0, subaddr=0x0, sublen=0
 bl602_i2c_send_data: count=2, temp=0xf4
 bl602_i2c_transfer: i2c transfer success
+
+bmp280_getreg8: regaddr=0xf5
 bl602_i2c_transfer: subflag=1, subaddr=0xf5, sublen=1
 bl602_i2c_recvdata: count=1, temp=0x10bdd800
 bl602_i2c_transfer: i2c transfer success
+bmp280_getreg8: regaddr=0xf5, regval=0x00
+
 bmp280_putreg8: regaddr=0xf5, regval=0x00
 bl602_i2c_transfer: subflag=0, subaddr=0x0, sublen=0
 bl602_i2c_send_data: count=2, temp=0xf5
 bl602_i2c_transfer: i2c transfer success
+
+bmp280_getreg8: regaddr=0xf5
 bl602_i2c_transfer: subflag=1, subaddr=0xf5, sublen=1
-bl602_i2_recvdata: count=1, temp=0x10bdd800
+bl602_i2c_recvdata: count=1, temp=0x10bdd800
 bl602_i2c_transfer: i2c transfer success
+bmp280_getreg8: regaddr=0xf5, regval=0x00
+
 sensor_custom_register: Registering /dev/sensor/baro0
 bmp280_register: BMP280 driver loaded successfully!
 
@@ -412,16 +427,23 @@ Read 10 sensor values from "/dev/sensor/baro0"...
 nsh> sensortest -n 10 baro0
 
 sensor_ioctl: cmd=a81 arg=4201c384
+bmp280_getreg8: regaddr=0xf5
 bl602_i2c_transfer: subflag=1, subaddr=0xf5, sublen=1
 bl602_i2c_recvdata: count=1, temp=0x10bdd800
 bl602_i2c_transfer: i2c transfer success
+bmp280_getreg8: regaddr=0xf5, regval=0x00
+
 bmp280_putreg8: regaddr=0xf5, regval=0xa0
 bl602_i2c_transfer: subflag=0, subaddr=0x0, sublen=0
 bl602_i2c_send_data: count=2, temp=0xa0f5
 bl602_i2c_transfer: i2c transfer success
+
+bmp280_getreg8: regaddr=0xf5
 bl602_i2c_transfer: subflag=1, subaddr=0xf5, sublen=1
 bl602_i2c_recvdata: count=1, temp=0x10bdd8a0
 bl602_i2c_transfer: i2c transfer success
+bmp280_getreg8: regaddr=0xf5, regval=0xa0
+
 sensor_ioctl: cmd=a82 arg=4201c388
 sensor_ioctl: cmd=a80 arg=00000001
 bmp280_putreg8: regaddr=0xf4, regval=0x2f
@@ -431,84 +453,94 @@ bl602_i2c_transfer: i2c transfer success
 
 SensorTest: Test /dev/sensor/baro0 with interval(1000000us), latency(0us)
 sensor_pollnotify: Report events: 01
+bmp280_getregs: regaddr=0xf7, length=6
 bl602_i2c_transfer: subflag=1, subaddr=0xf7, sublen=1
-bl602_i2c_recvdata: count=6, temp=0x8680e551
-bl602_i2c_recvdata: count=2, temp=0x8680002b
+bl602_i2c_recvdata: count=6, temp=0x80000080
+bl602_i2c_recvdata: count=2, temp=0x80000000
 bl602_i2c_transfer: i2c transfer success
-bmp280_fetch: press = 335448, temp = 549552
-baro0: timestamp:94920000 value1:1070.68 value2:30.04
+bmp280_fetch: press = 524288, temp = 524288
+baro0: timestamp:20540000 value1:714.07 value2:22.18
 
 sensor_pollnotify: Report events: 01
+bmp280_getregs: regaddr=0xf7, length=6
 bl602_i2c_transfer: subflag=1, subaddr=0xf7, sublen=1
-bl602_i2c_recvdata: count=6, temp=0x8680e551
-bl602_i2c_recvdata: count=2, temp=0x8680002b
+bl602_i2c_recvdata: count=6, temp=0x80000080
+bl602_i2c_recvdata: count=2, temp=0x80000000
 bl602_i2c_transfer: i2c transfer success
-bmp280_fetch: press = 335448, temp = 549552
-baro0: timestamp:94920000 value1:1070.68 value2:30.04
+bmp280_fetch: press = 524288, temp = 524288
+baro0: timestamp:20550000 value1:714.07 value2:22.18
 
 sensor_pollnotify: Report events: 01
+bmp280_getregs: regaddr=0xf7, length=6
 bl602_i2c_transfer: subflag=1, subaddr=0xf7, sublen=1
-bl602_i2c_recvdata: count=6, temp=0x8680e551
-bl602_i2c_recvdata: count=2, temp=0x8680002b
+bl602_i2c_recvdata: count=6, temp=0x80000080
+bl602_i2c_recvdata: count=2, temp=0x80000000
 bl602_i2c_transfer: i2c transfer success
-bmp280_fetch: press = 335448, temp = 549552
-baro0: timestamp:94930000 value1:1070.68 value2:30.04
+bmp280_fetch: press = 524288, temp = 524288
+baro0: timestamp:20550000 value1:714.07 value2:22.18
 
 sensor_pollnotify: Report events: 01
+bmp280_getregs: regaddr=0xf7, length=6
 bl602_i2c_transfer: subflag=1, subaddr=0xf7, sublen=1
-bl602_i2c_recvdata: count=6, temp=0x8680e551
-bl602_i2c_recvdata: count=2, temp=0x8680002b
+bl602_i2c_recvdata: count=6, temp=0x80000080
+bl602_i2c_recvdata: count=2, temp=0x80000000
 bl602_i2c_transfer: i2c transfer success
-bmp280_fetch: press = 335448, temp = 549552
-baro0: timestamp:94930000 value1:1070.68 value2:30.04
+bmp280_fetch: press = 524288, temp = 524288
+baro0: timestamp:20550000 value1:714.07 value2:22.18
 
 sensor_pollnotify: Report events: 01
+bmp280_getregs: regaddr=0xf7, length=6
 bl602_i2c_transfer: subflag=1, subaddr=0xf7, sublen=1
-bl602_i2c_recvdata: count=6, temp=0x8680e551
-bl602_i2c_recvdata: count=2, temp=0x8680002b
+bl602_i2c_recvdata: count=6, temp=0x86401752
+bl602_i2c_recvdata: count=2, temp=0x86400035
 bl602_i2c_transfer: i2c transfer success
-bmp280_fetch: press = 335448, temp = 549552
-baro0: timestamp:94930000 value1:1070.68 value2:30.04
+bmp280_fetch: press = 336244, temp = 549712
+baro0: timestamp:20550000 value1:1069.51 value2:30.09
 
 sensor_pollnotify: Report events: 01
+bmp280_getregs: regaddr=0xf7, length=6
 bl602_i2c_transfer: subflag=1, subaddr=0xf7, sublen=1
-bl602_i2c_recvdata: count=6, temp=0x8640ee51
-bl602_i2c_recvdata: count=2, temp=0x8640003c
+bl602_i2c_recvdata: count=6, temp=0x86401752
+bl602_i2c_recvdata: count=2, temp=0x86400035
 bl602_i2c_transfer: i2c transfer success
-bmp280_fetch: press = 335588, temp = 549824
-baro0: timestamp:94930000 value1:1070.60 value2:30.12
+bmp280_fetch: press = 336244, temp = 549712
+baro0: timestamp:20560000 value1:1069.51 value2:30.09
 
 sensor_pollnotify: Report events: 01
+bmp280_getregs: regaddr=0xf7, length=6
 bl602_i2c_transfer: subflag=1, subaddr=0xf7, sublen=1
-bl602_i2c_recvdata: count=6, temp=0x8640ee51
-bl602_i2c_recvdata: count=2, temp=0x8640003c
+bl602_i2c_recvdata: count=6, temp=0x86401752
+bl602_i2c_recvdata: count=2, temp=0x86400035
 bl602_i2c_transfer: i2c transfer success
-bmp280_fetch: press = 335588, temp = 549824
-baro0: timestamp:94930000 value1:1070.60 value2:30.12
+bmp280_fetch: press = 336244, temp = 549712
+baro0: timestamp:20560000 value1:1069.51 value2:30.09
 
 sensor_pollnotify: Report events: 01
+bmp280_getregs: regaddr=0xf7, length=6
 bl602_i2c_transfer: subflag=1, subaddr=0xf7, sublen=1
-bl602_i2c_recvdata: count=6, temp=0x8640ee51
-bl602_i2c_recvdata: count=2, temp=0x8640003c
+bl602_i2c_recvdata: count=6, temp=0x86401752
+bl602_i2c_recvdata: count=2, temp=0x86400035
 bl602_i2c_transfer: i2c transfer success
-bmp280_fetch: press = 335588, temp = 549824
-baro0: timestamp:94940000 value1:1070.60 value2:30.12
+bmp280_fetch: press = 336244, temp = 549712
+baro0: timestamp:20560000 value1:1069.51 value2:30.09
 
 sensor_pollnotify: Report events: 01
+bmp280_getregs: regaddr=0xf7, length=6
 bl602_i2c_transfer: subflag=1, subaddr=0xf7, sublen=1
-bl602_i2c_recvdata: count=6, temp=0x8640ee51
-bl602_i2c_recvdata: count=2, temp=0x8640003c
+bl602_i2c_recvdata: count=6, temp=0x86401752
+bl602_i2c_recvdata: count=2, temp=0x86400035
 bl602_i2c_transfer: i2c transfer success
-bmp280_fetch: press = 335588, temp = 549824
-baro0: timestamp:94940000 value1:1070.60 value2:30.12
+bmp280_fetch: press = 336244, temp = 549712
+baro0: timestamp:20560000 value1:1069.51 value2:30.09
 
 sensor_pollnotify: Report events: 01
+bmp280_getregs: regaddr=0xf7, length=6
 bl602_i2c_transfer: subflag=1, subaddr=0xf7, sublen=1
-bl602_i2c_recvdata: count=6, temp=0x8640ee51
-bl602_i2c_recvdata: count=2, temp=0x8640003c
+bl602_i2c_recvdata: count=6, temp=0x86401752
+bl602_i2c_recvdata: count=2, temp=0x86400035
 bl602_i2c_transfer: i2c transfer success
-bmp280_fetch: press = 335588, temp = 549824
-baro0: timestamp:94940000 value1:1070.60 value2:30.12
+bmp280_fetch: press = 336244, temp = 549712
+baro0: timestamp:20570000 value1:1069.51 value2:30.09
 
 SensorTest: Received message: baro0, number:10/10
 sensor_ioctl: cmd=a80 arg=00000000
