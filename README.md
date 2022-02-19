@@ -662,3 +662,5 @@ Yep the NuttX BMP280 Driver works OK! Now let's port the BME280 Driver from Zeph
 TODO: Port the BME280 Driver from Zephyr OS to NuttX
 
 https://github.com/zephyrproject-rtos/zephyr/blob/main/drivers/sensor/bme280/bme280.c
+
+Which looks highly similar to [NuttX's BMP280 Driver](https://github.com/apache/incubator-nuttx/blob/master/drivers/sensors/bmp280.c). So it should be straightforward.
