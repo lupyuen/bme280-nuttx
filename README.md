@@ -64,14 +64,14 @@ https://learn.sparkfun.com/tutorials/sparkfun-bme280-breakout-hookup-guide/all
 
 NuttX has a driver for BMP280 (Air Pressure only), let's test it with BME280.
 
-Configure NuttX for I2C to enable the I2C Character Driver, BMP280 Driver and BMP280 App...
+Configure NuttX for I2C to enable the I2C Character Driver, BMP280 Driver and Sensor Test App...
 
 - System Type → BL602 Peripheral Support → I2C0
 - Device Drivers → I2C Driver Support
 - Device Drivers → I2C Driver Support →  I2C character driver
 - Device Drivers → Sensor Device Support
 - Device Drivers → Sensor Device Support →  Bosch BMP280 Barometic Pressure Sensor
-- Application Configuration → Examples →  BMP180/280 Barometer sensor example
+- Application Configuration → Testing → Sensor driver test
 - Build Setup → Debug Options
   - → Enable Informational Debug Output 
   - → I2C Debug Features
@@ -266,13 +266,53 @@ https://github.com/lupyuen/incubator-nuttx/blob/bme280/drivers/sensors/bmp280.c#
 static uint8_t bmp280_getreg8(FAR struct bmp280_dev_s *priv, uint8_t regaddr)
 {
   ...
-  //// Previously msg[0].flags     = 0;
+  //// Previously:
+  //// msg[0].flags     = 0;
 
   #warning Testing: I2C_M_NOSTOP for I2C Sub Address
   msg[0].flags     = I2C_M_NOSTOP;  ////  Testing I2C Sub Address
 
   msg[0].buffer    = &regaddr;
   msg[0].length    = 1;
+```
+
+https://github.com/lupyuen/incubator-nuttx/blob/bme280/drivers/sensors/bmp280.c#L244-L257
+
+```c
+static int bmp280_getregs(FAR struct bmp280_dev_s *priv, uint8_t regaddr,
+                          uint8_t *rxbuffer, uint8_t length)
+{
+  ...
+  msg[0].frequency = priv->freq;
+  msg[0].addr      = priv->addr;
+
+  //// Previously:
+  //// msg[0].flags     = 0;
+
+  #warning Testing: I2C_M_NOSTOP for I2C Sub Address
+  msg[0].flags     = I2C_M_NOSTOP;  ////  Testing I2C Sub Address
+
+  msg[0].buffer    = &regaddr;
+  msg[0].length    = 1;
+```
+
+TODO:
+
+https://github.com/lupyuen/incubator-nuttx/blob/bme280/drivers/sensors/bmp280.c#L286-L300
+
+```c
+static int bmp280_putreg8(FAR struct bmp280_dev_s *priv, uint8_t regaddr,
+                          uint8_t regval)
+{
+  ...
+  txbuffer[0] = regaddr;
+  txbuffer[1] = regval;
+
+  msg[0].frequency = priv->freq;
+  msg[0].addr      = priv->addr;
+  msg[0].flags     = 0;
+  msg[0].buffer    = txbuffer;
+  msg[0].length    = 2;
 ```
 
 # BMP280 Driver Loads OK
