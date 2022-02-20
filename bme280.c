@@ -25,7 +25,9 @@
 
 #include "bme280.h"
 
+#ifndef __NuttX__
 LOG_MODULE_REGISTER(BME280, CONFIG_SENSOR_LOG_LEVEL);
+#endif  //  !__NuttX__
 
 #ifndef __NuttX__
 #if DT_NUM_INST_STATUS_OKAY(DT_DRV_COMPAT) == 0
