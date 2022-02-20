@@ -667,7 +667,7 @@ NuttX BMP280 Driver works OK with our BME280 Sensor ... But we're missing one th
 
 https://github.com/zephyrproject-rtos/zephyr/blob/main/drivers/sensor/bme280/bme280.c
 
-This looks highly similar to [NuttX's BMP280 Driver](https://github.com/apache/incubator-nuttx/blob/master/drivers/sensors/bmp280.c). So it should be straightforward.
+Zephyr BME280 Driver looks similar to [NuttX BMP280 Driver](https://github.com/apache/incubator-nuttx/blob/master/drivers/sensors/bmp280.c) ... So porting Zephyr BME280 Driver to NuttX might not be so hard 🤔
 
 `bme280_sample_fetch` and `bme280_channel_get` are explained in the Zephyr Sensor API: https://docs.zephyrproject.org/latest/reference/peripherals/sensor.html
 
