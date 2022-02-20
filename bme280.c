@@ -9,23 +9,27 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-////#include <kernel.h>
-////#include <drivers/sensor.h>
-////#include <init.h>
-////#include <drivers/gpio.h>
-////#include <pm/device.h>
-////#include <sys/byteorder.h>
-////#include <sys/__assert.h>
+#ifndef __NuttX__
+#include <kernel.h>
+#include <drivers/sensor.h>
+#include <init.h>
+#include <drivers/gpio.h>
+#include <pm/device.h>
+#include <sys/byteorder.h>
+#include <sys/__assert.h>
 
-////#include <logging/log.h>
+#include <logging/log.h>
+#endif  //  !__NuttX__
 
 #include "bme280.h"
 
 LOG_MODULE_REGISTER(BME280, CONFIG_SENSOR_LOG_LEVEL);
 
-////#if DT_NUM_INST_STATUS_OKAY(DT_DRV_COMPAT) == 0
-////#warning "BME280 driver enabled without any devices"
-////#endif
+#ifndef __NuttX__
+#if DT_NUM_INST_STATUS_OKAY(DT_DRV_COMPAT) == 0
+#warning "BME280 driver enabled without any devices"
+#endif
+#endif  //  !__NuttX__
 
 struct bme280_data {
 	/* Compensation parameters. */
@@ -64,13 +68,16 @@ struct bme280_config {
 	const struct bme280_bus_io *bus_io;
 };
 
+#ifndef __NuttX__
 static inline int bme280_bus_check(const struct device *dev)
 {
 	const struct bme280_config *cfg = dev->config;
 
 	return cfg->bus_io->check(&cfg->bus);
 }
+#endif  //  !__NuttX__
 
+#ifndef __NuttX__
 static inline int bme280_reg_read(const struct device *dev,
 				  uint8_t start, uint8_t *buf, int size)
 {
@@ -78,7 +85,9 @@ static inline int bme280_reg_read(const struct device *dev,
 
 	return cfg->bus_io->read(&cfg->bus, start, buf, size);
 }
+#endif  //  !__NuttX__
 
+#ifndef __NuttX__
 static inline int bme280_reg_write(const struct device *dev, uint8_t reg,
 				   uint8_t val)
 {
@@ -86,6 +95,7 @@ static inline int bme280_reg_write(const struct device *dev, uint8_t reg,
 
 	return cfg->bus_io->write(&cfg->bus, reg, val);
 }
+#endif  //  !__NuttX__
 
 /*
  * Compensation code taken from BME280 datasheet, Section 4.2.3
