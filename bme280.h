@@ -1,3 +1,4 @@
+//  From https://github.com/zephyrproject-rtos/zephyr/blob/main/drivers/sensor/bme280/bme280.h
 /*
  * Copyright (c) 2016, 2017 Intel Corporation
  * Copyright (c) 2017 IpTronix S.r.l.
