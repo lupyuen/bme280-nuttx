@@ -10,16 +10,16 @@
 #ifndef ZEPHYR_DRIVERS_SENSOR_BME280_BME280_H_
 #define ZEPHYR_DRIVERS_SENSOR_BME280_BME280_H_
 
-#include <zephyr/types.h>
-#include <device.h>
-#include <devicetree.h>
-#include <drivers/spi.h>
-#include <drivers/i2c.h>
+////#include <zephyr/types.h>
+////#include <device.h>
+////#include <devicetree.h>
+////#include <drivers/spi.h>
+////#include <drivers/i2c.h>
 
 #define DT_DRV_COMPAT bosch_bme280
 
-#define BME280_BUS_SPI DT_ANY_INST_ON_BUS_STATUS_OKAY(spi)
-#define BME280_BUS_I2C DT_ANY_INST_ON_BUS_STATUS_OKAY(i2c)
+////#define BME280_BUS_SPI DT_ANY_INST_ON_BUS_STATUS_OKAY(spi)
+////#define BME280_BUS_I2C DT_ANY_INST_ON_BUS_STATUS_OKAY(i2c)
 
 union bme280_bus {
 #if BME280_BUS_SPI

@@ -9,23 +9,23 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include <kernel.h>
-#include <drivers/sensor.h>
-#include <init.h>
-#include <drivers/gpio.h>
-#include <pm/device.h>
-#include <sys/byteorder.h>
-#include <sys/__assert.h>
+////#include <kernel.h>
+////#include <drivers/sensor.h>
+////#include <init.h>
+////#include <drivers/gpio.h>
+////#include <pm/device.h>
+////#include <sys/byteorder.h>
+////#include <sys/__assert.h>
 
-#include <logging/log.h>
+////#include <logging/log.h>
 
 #include "bme280.h"
 
 LOG_MODULE_REGISTER(BME280, CONFIG_SENSOR_LOG_LEVEL);
 
-#if DT_NUM_INST_STATUS_OKAY(DT_DRV_COMPAT) == 0
-#warning "BME280 driver enabled without any devices"
-#endif
+////#if DT_NUM_INST_STATUS_OKAY(DT_DRV_COMPAT) == 0
+////#warning "BME280 driver enabled without any devices"
+////#endif
 
 struct bme280_data {
 	/* Compensation parameters. */
