@@ -663,10 +663,12 @@ Yep the NuttX BMP280 Driver works OK! Now let's port the BME280 Driver from Zeph
 
 # Port BME280 Driver from Zephyr OS
 
-TODO: Port the BME280 Driver from Zephyr OS to NuttX
+NuttX BMP280 Driver works OK with our BME280 Sensor ... But we're missing one thing: Humidity ... Can we port the BME280 Driver from Zephyr OS? 🤔
 
 https://github.com/zephyrproject-rtos/zephyr/blob/main/drivers/sensor/bme280/bme280.c
 
-Which looks highly similar to [NuttX's BMP280 Driver](https://github.com/apache/incubator-nuttx/blob/master/drivers/sensors/bmp280.c). So it should be straightforward.
+This looks highly similar to [NuttX's BMP280 Driver](https://github.com/apache/incubator-nuttx/blob/master/drivers/sensors/bmp280.c). So it should be straightforward.
 
-Zephyr Sensor API: https://docs.zephyrproject.org/latest/reference/peripherals/sensor.html
+`bme280_sample_fetch` and `bme280_channel_get` are explained in the Zephyr Sensor API: https://docs.zephyrproject.org/latest/reference/peripherals/sensor.html
+
+TODO
