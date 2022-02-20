@@ -47,9 +47,11 @@ static int bme280_reg_read(const struct device *dev,
 static int bme280_reg_write(const struct device *dev, uint8_t reg,
     uint8_t val);
 
-#include "bme280/bme280.c"  //  Zephyr BME280 Driver
+//  Embed Zephyr BME280 Driver
+#include "bme280/bme280.c"
 
-//  TODO: char *name;                   /* TODO: Name of the device */
-//  TODO: struct bme280_data *data;     /* TODO: Compensation parameters */
+//  Embed NuttX Driver Shell
+//  TODO: #include "bme280/driver.c"
 
-////#include "bme280/driver.c"  //  NuttX Driver Shell
+//  TODO: Init char *name;                   /* Name of the device */
+//  TODO: Init struct bme280_data *data;     /* Compensation parameters */
