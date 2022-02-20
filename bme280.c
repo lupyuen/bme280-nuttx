@@ -9,7 +9,9 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#ifndef __NuttX__
+#ifdef __NuttX__
+#include <nuttx/sensors/sensor.h>
+#else
 #include <kernel.h>
 #include <drivers/sensor.h>
 #include <init.h>
@@ -19,7 +21,7 @@
 #include <sys/__assert.h>
 
 #include <logging/log.h>
-#endif  //  !__NuttX__
+#endif  //  __NuttX__
 
 #include "bme280.h"
 
@@ -67,6 +69,20 @@ struct bme280_config {
 	union bme280_bus bus;
 	const struct bme280_bus_io *bus_io;
 };
+
+#ifdef __NuttX__
+struct device
+{
+	FAR struct sensor_lowerhalf_s sensor_lower;
+	FAR struct i2c_master_s *i2c; /* I2C interface */
+	uint8_t addr;                 /* BME280 I2C address */
+	int freq;                     /* BME280 Frequency <= 3.4MHz */
+	bool activated;
+
+	char *name;                   /* TODO: Name of the device */
+	struct bme280_data *data;     /* TODO: Compensation parameters */
+};
+#endif  //  __NuttX__
 
 #ifndef __NuttX__
 static inline int bme280_bus_check(const struct device *dev)
@@ -271,10 +287,12 @@ static int bme280_channel_get(const struct device *dev,
 	return 0;
 }
 
+#ifndef __NuttX__
 static const struct sensor_driver_api bme280_api_funcs = {
 	.sample_fetch = bme280_sample_fetch,
 	.channel_get = bme280_channel_get,
 };
+#endif  //  !__NuttX__
 
 static int bme280_read_compensation(const struct device *dev)
 {
@@ -429,6 +447,7 @@ static int bme280_pm_action(const struct device *dev,
 }
 #endif /* CONFIG_PM_DEVICE */
 
+#ifndef __NuttX__
 /* Initializes a struct bme280_config for an instance on a SPI bus. */
 #define BME280_CONFIG_SPI(inst)				\
 	{						\
@@ -468,3 +487,4 @@ static int bme280_pm_action(const struct device *dev,
 
 /* Create the struct device for every status "okay" node in the devicetree. */
 DT_INST_FOREACH_STATUS_OKAY(BME280_DEFINE)
+#endif  //  !__NuttX__
