@@ -672,3 +672,42 @@ This looks highly similar to [NuttX's BMP280 Driver](https://github.com/apache/i
 `bme280_sample_fetch` and `bme280_channel_get` are explained in the Zephyr Sensor API: https://docs.zephyrproject.org/latest/reference/peripherals/sensor.html
 
 TODO
+
+# Install Driver
+
+To add this repo to your NuttX project...
+
+```bash
+cd nuttx/drivers/sensors
+git submodule add https://github.com/lupyuen/bme280-nuttx bme280
+```
+
+TODO: Next update the Makefiles and Kconfig...
+
+Then update the NuttX Build Config...
+
+```bash
+## TODO: Change this to the path of our "incubator-nuttx" folder
+cd nuttx/nuttx
+
+## Preserve the Build Config
+cp .config ../config
+
+## Erase the Build Config and Kconfig files
+make distclean
+
+## For BL602: Configure the build for BL602
+./tools/configure.sh bl602evb:nsh
+
+## For ESP32: Configure the build for ESP32.
+## TODO: Change "esp32-devkitc" to our ESP32 board.
+./tools/configure.sh esp32-devkitc:nsh
+
+## Restore the Build Config
+cp ../config .config
+
+## Edit the Build Config
+make menuconfig 
+```
+
+In menuconfig, enable the Bosch BME280 Sensor under "Device Drivers → Sensor Device Support".
