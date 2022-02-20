@@ -1,3 +1,5 @@
+//  We bundle the Zephyr and NuttX Drivers into a single source file,
+//  so we don't need to fix the NuttX build system.
 #include <nuttx/config.h>
 #include <nuttx/nuttx.h>
 #include <stdlib.h>
@@ -20,7 +22,7 @@
 #define __ASSERT_NO_MSG assert  //  Assertion check
 #define LOG_DBG         sninfo  //  Log info message
 
-//  Zephyr Sensor Channels to be fetched from the sensor
+//  Zephyr Sensor Channel to be fetched from the sensor
 enum sensor_channel {
     SENSOR_CHAN_ALL,           //  All Channels
     SENSOR_CHAN_AMBIENT_TEMP,  //  Ambient Temperature
