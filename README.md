@@ -673,8 +673,6 @@ Zephyr BME280 Driver looks similar to [NuttX BMP280 Driver](https://github.com/a
 
 https://docs.zephyrproject.org/latest/reference/peripherals/sensor.html
 
-TODO
-
 # Install Driver
 
 To add this repo to your NuttX project...
@@ -716,3 +714,15 @@ make menuconfig
 ```
 
 In menuconfig, enable the Bosch BME280 Sensor under "Device Drivers → Sensor Device Support".
+
+# Wrap Zephyr Driver as NuttX Driver
+
+Zephyr BME280 Driver builds OK on #NuttX (with a few tweaks) 🎉 
+
+https://github.com/lupyuen/bme280-nuttx/blob/main/bme280.c
+
+Now we wrap the Zephyr Driver as a NuttX Driver...
+
+https://github.com/lupyuen/bme280-nuttx/blob/main/bundle.c
+
+TODO
