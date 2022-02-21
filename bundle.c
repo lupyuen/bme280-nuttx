@@ -23,8 +23,9 @@
 #define BME280_BUS_SPI  0  //  SPI Bus
 #define __ASSERT_NO_MSG DEBUGASSERT  //  Assertion check
 #define LOG_DBG         sninfo       //  Log info message
-#define K_MSEC(ms)      ms * 1000    //  Convert milliseconds to microseconds
+#define K_MSEC(ms)      (ms * 1000)  //  Convert milliseconds to microseconds
 #define k_sleep(us)     usleep(us)   //  Sleep for microseconds
+#define sys_le16_to_cpu(x) (x)       //  Convert from little endian to host endian (assume host is little endian)
 
 //  Zephyr Sensor Channel to be fetched from the sensor
 enum sensor_channel {
