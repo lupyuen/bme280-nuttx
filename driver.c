@@ -131,11 +131,6 @@
  * Private Function Prototypes
  ****************************************************************************/
 
-static uint8_t bme280_getreg8(FAR struct device *priv,
-                              uint8_t regaddr);
-static int bme280_putreg8(FAR struct device *priv, uint8_t regaddr,
-                          uint8_t regval);
-
 /* Sensor methods */
 
 static int bme280_set_interval(FAR struct sensor_lowerhalf_s *lower,
@@ -161,61 +156,17 @@ static const struct sensor_ops_s g_sensor_ops =
  ****************************************************************************/
 
 /****************************************************************************
- * Name: bme280_getreg8
+ * Name: bme280_reg_read
  *
  * Description:
- *   Read from an 8-bit BME280 register
+ *   Read from 8-bit BME280 registers
  *
  ****************************************************************************/
 
-static uint8_t bme280_getreg8(FAR struct device *priv, uint8_t regaddr)
+static int bme280_reg_read(const struct device *priv,
+    uint8_t start, uint8_t *buf, int size)
 {
-  sninfo("regaddr=0x%02x\n", regaddr); ////
-  struct i2c_msg_s msg[2];
-  uint8_t regval = 0;
-  int ret;
-
-  msg[0].frequency = priv->freq;
-  msg[0].addr      = priv->addr;
-
-  //// Previously:
-  //// msg[0].flags     = 0;
-
-  #warning Testing: I2C_M_NOSTOP for I2C Sub Address
-  msg[0].flags     = I2C_M_NOSTOP;  ////  Testing I2C Sub Address
-
-  msg[0].buffer    = &regaddr;
-  msg[0].length    = 1;
-
-  msg[1].frequency = priv->freq;
-  msg[1].addr      = priv->addr;
-  msg[1].flags     = I2C_M_READ;
-  msg[1].buffer    = &regval;
-  msg[1].length    = 1;
-
-  ret = I2C_TRANSFER(priv->i2c, msg, 2);
-  if (ret < 0)
-    {
-      snerr("I2C_TRANSFER failed: %d\n", ret);
-      return 0;
-    }
-
-  sninfo("regaddr=0x%02x, regval=0x%02x\n", regaddr, regval); ////
-  return regval;
-}
-
-/****************************************************************************
- * Name: bme280_getregs
- *
- * Description:
- *   Read two 8-bit from a BME280 register
- *
- ****************************************************************************/
-
-static int bme280_getregs(FAR struct device *priv, uint8_t regaddr,
-                          uint8_t *rxbuffer, uint8_t length)
-{
-  sninfo("regaddr=0x%02x, length=%d\n", regaddr, length); ////
+  sninfo("start=0x%02x, size=%d\n", start, size); ////
   struct i2c_msg_s msg[2];
   int ret;
 
@@ -228,14 +179,14 @@ static int bme280_getregs(FAR struct device *priv, uint8_t regaddr,
   #warning Testing: I2C_M_NOSTOP for I2C Sub Address
   msg[0].flags     = I2C_M_NOSTOP;  ////  Testing I2C Sub Address
 
-  msg[0].buffer    = &regaddr;
+  msg[0].buffer    = &start;
   msg[0].length    = 1;
 
   msg[1].frequency = priv->freq;
   msg[1].addr      = priv->addr;
   msg[1].flags     = I2C_M_READ;
-  msg[1].buffer    = rxbuffer;
-  msg[1].length    = length;
+  msg[1].buffer    = buf;
+  msg[1].length    = size;
 
   ret = I2C_TRANSFER(priv->i2c, msg, 2);
   if (ret < 0)
@@ -248,23 +199,23 @@ static int bme280_getregs(FAR struct device *priv, uint8_t regaddr,
 }
 
 /****************************************************************************
- * Name: bme280_putreg8
+ * Name: bme280_reg_write
  *
  * Description:
  *   Write to an 8-bit BME280 register
  *
  ****************************************************************************/
 
-static int bme280_putreg8(FAR struct device *priv, uint8_t regaddr,
-                          uint8_t regval)
+static int bme280_reg_write(const struct device *priv, uint8_t reg,
+    uint8_t val)
 {
-  sninfo("regaddr=0x%02x, regval=0x%02x\n", regaddr, regval); ////
+  sninfo("reg=0x%02x, val=0x%02x\n", reg, val); ////
   struct i2c_msg_s msg[2];
   uint8_t txbuffer[2];
   int ret;
 
-  txbuffer[0] = regaddr;
-  txbuffer[1] = regval;
+  txbuffer[0] = reg;
+  txbuffer[1] = val;
 
   msg[0].frequency = priv->freq;
   msg[0].addr      = priv->addr;
@@ -291,6 +242,8 @@ static int bme280_putreg8(FAR struct device *priv, uint8_t regaddr,
 
 static int bme280_set_standby(FAR struct device *priv, uint8_t value)
 {
+  sninfo("TODO value=%d\n", value); ////
+#ifdef TODO
   uint8_t v_data_u8;
   uint8_t v_sb_u8;
 
@@ -310,6 +263,7 @@ static int bme280_set_standby(FAR struct device *priv, uint8_t value)
       snerr("Failed to set value for standby time.");
       return ERROR;
     }
+#endif  //  TODO
 
   return OK;
 }
