@@ -466,7 +466,7 @@ int bme280_register(int devno, FAR struct i2c_master_s *i2c)
       return -ENOMEM;
     }
 
-  /* Initialize the Compensation Parameters */
+  /* Allocate the Compensation Parameters */
 
   struct bme280_data *data = (FAR struct bme280_data *)kmm_zalloc(sizeof(struct bme280_data));
   if (!data)
