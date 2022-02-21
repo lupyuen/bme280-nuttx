@@ -730,6 +730,337 @@ https://github.com/lupyuen/bme280-nuttx/blob/main/bundle.c
 
 TODO
 
+Log:
+
+```text
+spi_test_driver_register: devpath=/dev/spitest0, spidev=0
+bme280_reg_read: start=0xd0, size=1
+bme280_chip_init: ID OKbme280_reg_write: reg=0xe0, val=0xb6
+bme280_reg_read: start=0xf3, size=1
+bme280_reg_read: start=0x88, size=24
+bme280_reg_read: start=0xa1, size=1
+bme280_reg_read: start=0xe1, size=7
+bme280_reg_write: reg=0xf2, val=0x05
+bme280_reg_write: reg=0xf4, val=0x57
+bme280_reg_write: reg=0xf5, val=0xa8
+bme280_chip_init: "BME280" OKsensor_custom_register: Registering /dev/sensor/baro0
+bme280_register: BME280 driver loaded successfully!
+
+NuttShell (NSH) NuttX-10.2.0-RC0
+nsh> sensortest -n 10 baro0
+sensor_ioctl: cmd=a81 arg=4201c394
+bme280_set_interval: TODO period_us=1107411860
+bme280_set_standby: TODO value=5
+sensor_ioctl: cmd=a82 arg=4201c398
+sensor_ioctl: cmd=a80 arg=00000001
+bme280_activate: TODO enable=1
+SensorTest: Test /dev/sensor/baro0 with interval(1000000us), latency(0us)
+sensor_pollnotify: Report events: 01
+bme280_reg_read: start=0xf3, size=1
+bme280_reg_read: start=0xf7, size=8
+bme280_fetch: temperature=30.430000 °C, pressure=100.512650 mbar, humidity=80.157227 %
+baro0: timestamp:30550000 value1:100.51 value2:30.43
+sensor_pollnotify: Report events: 01
+bme280_reg_read: start=0xf3, size=1
+bme280_reg_read: start=0xf7, size=8
+bme280_fetch: temperature=30.430000 °C, pressure=100.512650 mbar, humidity=80.157227 %
+baro0: timestamp:30570000 value1:100.51 value2:30.43
+sensor_pollnotify: Report events: 01
+bme280_reg_read: start=0xf3, size=1
+bme280_reg_read: start=0xf7, size=8
+bme280_fetch: temperature=30.430000 °C, pressure=100.512650 mbar, humidity=80.157227 %
+baro0: timestamp:30590000 value1:100.51 value2:30.43
+sensor_pollnotify: Report events: 01
+bme280_reg_read: start=0xf3, size=1
+bme280_reg_read: start=0xf7, size=8
+bme280_fetch: temperature=30.430000 °C, pressure=100.512650 mbar, humidity=80.157227 %
+baro0: timestamp:30610000 value1:100.51 value2:30.43
+sensor_pollnotify: Report events: 01
+bme280_reg_read: start=0xf3, size=1
+bme280_reg_read: start=0xf7, size=8
+bme280_fetch: temperature=30.430000 °C, pressure=100.512650 mbar, humidity=80.157227 %
+baro0: timestamp:30630000 value1:100.51 value2:30.43
+sensor_pollnotify: Report events: 01
+bme280_reg_read: start=0xf3, size=1
+bme280_reg_read: start=0xf7, size=8
+bme280_fetch: temperature=30.430000 °C, pressure=100.512650 mbar, humidity=80.157227 %
+baro0: timestamp:30650000 value1:100.51 value2:30.43
+sensor_pollnotify: Report events: 01
+bme280_reg_read: start=0xf3, size=1
+bme280_reg_read: start=0xf7, size=8
+bme280_fetch: temperature=30.430000 °C, pressure=100.512650 mbar, humidity=80.157227 %
+baro0: timestamp:30670000 value1:100.51 value2:30.43
+sensor_pollnotify: Report events: 01
+bme280_reg_read: start=0xf3, size=1
+bme280_reg_read: start=0xf7, size=8
+bme280_fetch: temperature=30.430000 °C, pressure=100.512650 mbar, humidity=80.157227 %
+baro0: timestamp:30690000 value1:100.51 value2:30.43
+sensor_pollnotify: Report events: 01
+bme280_reg_read: start=0xf3, size=1
+bme280_reg_read: start=0xf7, size=8
+bme280_fetch: temperature=30.430000 °C, pressure=100.512650 mbar, humidity=80.157227 %
+baro0: timestamp:30710000 value1:100.51 value2:30.43
+sensor_pollnotify: Report events: 01
+bme280_reg_read: start=0xf3, size=1
+bme280_reg_read: start=0xf7, size=8
+bme280_fetch: temperature=30.430000 °C, pressure=100.512650 mbar, humidity=80.157227 %
+baro0: timestamp:30730000 value1:100.51 value2:30.43
+SensorTest: Received message: baro0, number:10/10
+sensor_ioctl: cmd=a80 arg=00000000
+bme280_activate: TODO enable=0
+
+nsh> sensortest -n 10 baro0
+sensor_ioctl: cmd=a81 arg=4201c394
+bme280_set_interval: TODO period_us=1107411860
+bme280_set_standby: TODO value=5
+sensor_ioctl: cmd=a82 arg=4201c398
+sensor_ioctl: cmd=a80 arg=00000001
+bme280_activate: TODO enable=1
+SensorTest: Test /dev/sensor/baro0 with interval(1000000us), latency(0us)
+sensor_pollnotify: Report events: 01
+bme280_reg_read: start=0xf3, size=1
+bme280_reg_read: start=0xf7, size=8
+bme280_fetch: temperature=30.430000 °C, pressure=100.513077 mbar, humidity=80.532227 %
+baro0: timestamp:33450000 value1:100.51 value2:30.43
+sensor_pollnotify: Report events: 01
+bme280_reg_read: start=0xf3, size=1
+bme280_reg_read: start=0xf7, size=8
+bme280_fetch: temperature=30.430000 °C, pressure=100.513077 mbar, humidity=80.532227 %
+baro0: timestamp:33470000 value1:100.51 value2:30.43
+sensor_pollnotify: Report events: 01
+bme280_reg_read: start=0xf3, size=1
+bme280_reg_read: start=0xf7, size=8
+bme280_fetch: temperature=30.430000 °C, pressure=100.513077 mbar, humidity=80.532227 %
+baro0: timestamp:33490000 value1:100.51 value2:30.43
+sensor_pollnotify: Report events: 01
+bme280_reg_read: start=0xf3, size=1
+bme280_reg_read: start=0xf7, size=8
+bme280_fetch: temperature=30.430000 °C, pressure=100.513077 mbar, humidity=80.532227 %
+baro0: timestamp:33510000 value1:100.51 value2:30.43
+sensor_pollnotify: Report events: 01
+bme280_reg_read: start=0xf3, size=1
+bme280_reg_read: start=0xf7, size=8
+bme280_fetch: temperature=30.430000 °C, pressure=100.513077 mbar, humidity=80.532227 %
+baro0: timestamp:33530000 value1:100.51 value2:30.43
+sensor_pollnotify: Report events: 01
+bme280_reg_read: start=0xf3, size=1
+bme280_reg_read: start=0xf7, size=8
+bme280_fetch: temperature=30.430000 °C, pressure=100.513077 mbar, humidity=80.532227 %
+baro0: timestamp:33550000 value1:100.51 value2:30.43
+sensor_pollnotify: Report events: 01
+bme280_reg_read: start=0xf3, size=1
+bme280_reg_read: start=0xf7, size=8
+bme280_fetch: temperature=30.430000 °C, pressure=100.513077 mbar, humidity=80.532227 %
+baro0: timestamp:33570000 value1:100.51 value2:30.43
+sensor_pollnotify: Report events: 01
+bme280_reg_read: start=0xf3, size=1
+bme280_reg_read: start=0xf7, size=8
+bme280_fetch: temperature=30.430000 °C, pressure=100.513077 mbar, humidity=80.532227 %
+baro0: timestamp:33590000 value1:100.51 value2:30.43
+sensor_pollnotify: Report events: 01
+bme280_reg_read: start=0xf3, size=1
+bme280_reg_read: start=0xf7, size=8
+bme280_fetch: temperature=30.430000 °C, pressure=100.513077 mbar, humidity=80.532227 %
+baro0: timestamp:33610000 value1:100.51 value2:30.43
+sensor_pollnotify: Report events: 01
+bme280_reg_read: start=0xf3, size=1
+bme280_reg_read: start=0xf7, size=8
+bme280_fetch: temperature=30.430000 °C, pressure=100.513077 mbar, humidity=80.532227 %
+baro0: timestamp:33630000 value1:100.51 value2:30.43
+SensorTest: Received message: baro0, number:10/10
+sensor_ioctl: cmd=a80 arg=00000000
+bme280_activate: TODO enable=0
+
+nsh> sensortest -n 10 baro0
+sensor_ioctl: cmd=a81 arg=4201c394
+bme280_set_interval: TODO period_us=1107411860
+bme280_set_standby: TODO value=5
+sensor_ioctl: cmd=a82 arg=4201c398
+sensor_ioctl: cmd=a80 arg=00000001
+bme280_activate: TODO enable=1
+SensorTest: Test /dev/sensor/baro0 with interval(1000000us), latency(0us)
+sensor_pollnotify: Report events: 01
+bme280_reg_read: start=0xf3, size=1
+bme280_reg_read: start=0xf7, size=8
+bme280_fetch: temperature=30.430000 °C, pressure=100.512726 mbar, humidity=80.730469 %
+baro0: timestamp:35350000 value1:100.51 value2:30.43
+sensor_pollnotify: Report events: 01
+bme280_reg_read: start=0xf3, size=1
+bme280_reg_read: start=0xf7, size=8
+bme280_fetch: temperature=30.430000 °C, pressure=100.512726 mbar, humidity=80.730469 %
+baro0: timestamp:35370000 value1:100.51 value2:30.43
+sensor_pollnotify: Report events: 01
+bme280_reg_read: start=0xf3, size=1
+bme280_reg_read: start=0xf7, size=8
+bme280_fetch: temperature=30.430000 °C, pressure=100.512726 mbar, humidity=80.730469 %
+baro0: timestamp:35390000 value1:100.51 value2:30.43
+sensor_pollnotify: Report events: 01
+bme280_reg_read: start=0xf3, size=1
+bme280_reg_read: start=0xf7, size=8
+bme280_fetch: temperature=30.430000 °C, pressure=100.512726 mbar, humidity=80.730469 %
+baro0: timestamp:35410000 value1:100.51 value2:30.43
+sensor_pollnotify: Report events: 01
+bme280_reg_read: start=0xf3, size=1
+bme280_reg_read: start=0xf7, size=8
+bme280_fetch: temperature=30.430000 °C, pressure=100.512726 mbar, humidity=80.730469 %
+baro0: timestamp:35430000 value1:100.51 value2:30.43
+sensor_pollnotify: Report events: 01
+bme280_reg_read: start=0xf3, size=1
+bme280_reg_read: start=0xf7, size=8
+bme280_fetch: temperature=30.430000 °C, pressure=100.512726 mbar, humidity=80.730469 %
+baro0: timestamp:35450000 value1:100.51 value2:30.43
+sensor_pollnotify: Report events: 01
+bme280_reg_read: start=0xf3, size=1
+bme280_reg_read: start=0xf7, size=8
+bme280_fetch: temperature=30.430000 °C, pressure=100.512726 mbar, humidity=80.730469 %
+baro0: timestamp:35470000 value1:100.51 value2:30.43
+sensor_pollnotify: Report events: 01
+bme280_reg_read: start=0xf3, size=1
+bme280_reg_read: start=0xf7, size=8
+bme280_fetch: temperature=30.430000 °C, pressure=100.512726 mbar, humidity=80.730469 %
+baro0: timestamp:35490000 value1:100.51 value2:30.43
+sensor_pollnotify: Report events: 01
+bme280_reg_read: start=0xf3, size=1
+bme280_reg_read: start=0xf7, size=8
+bme280_fetch: temperature=30.430000 °C, pressure=100.512726 mbar, humidity=80.730469 %
+baro0: timestamp:35510000 value1:100.51 value2:30.43
+sensor_pollnotify: Report events: 01
+bme280_reg_read: start=0xf3, size=1
+bme280_reg_read: start=0xf7, size=8
+bme280_fetch: temperature=30.430000 °C, pressure=100.512726 mbar, humidity=80.730469 %
+baro0: timestamp:35530000 value1:100.51 value2:30.43
+SensorTest: Received message: baro0, number:10/10
+sensor_ioctl: cmd=a80 arg=00000000
+bme280_activate: TODO enable=0
+
+nsh> sensortest -n 10 baro0
+sensor_ioctl: cmd=a81 arg=4201c394
+bme280_set_interval: TODO period_us=1107411860
+bme280_set_standby: TODO value=5
+sensor_ioctl: cmd=a82 arg=4201c398
+sensor_ioctl: cmd=a80 arg=00000001
+bme280_activate: TODO enable=1
+SensorTest: Test /dev/sensor/baro0 with interval(1000000us), latency(0us)
+sensor_pollnotify: Report events: 01
+bme280_reg_read: start=0xf3, size=1
+bme280_reg_read: start=0xf7, size=8
+bme280_fetch: temperature=30.430000 °C, pressure=100.512207 mbar, humidity=80.862305 %
+baro0: timestamp:37090000 value1:100.51 value2:30.43
+sensor_pollnotify: Report events: 01
+bme280_reg_read: start=0xf3, size=1
+bme280_reg_read: start=0xf7, size=8
+bme280_fetch: temperature=30.430000 °C, pressure=100.512207 mbar, humidity=80.862305 %
+baro0: timestamp:37110000 value1:100.51 value2:30.43
+sensor_pollnotify: Report events: 01
+bme280_reg_read: start=0xf3, size=1
+bme280_reg_read: start=0xf7, size=8
+bme280_fetch: temperature=30.430000 °C, pressure=100.512207 mbar, humidity=80.862305 %
+baro0: timestamp:37130000 value1:100.51 value2:30.43
+sensor_pollnotify: Report events: 01
+bme280_reg_read: start=0xf3, size=1
+bme280_reg_read: start=0xf7, size=8
+bme280_fetch: temperature=30.430000 °C, pressure=100.512207 mbar, humidity=80.862305 %
+baro0: timestamp:37150000 value1:100.51 value2:30.43
+sensor_pollnotify: Report events: 01
+bme280_reg_read: start=0xf3, size=1
+bme280_reg_read: start=0xf7, size=8
+bme280_fetch: temperature=30.430000 °C, pressure=100.512207 mbar, humidity=80.862305 %
+baro0: timestamp:37170000 value1:100.51 value2:30.43
+sensor_pollnotify: Report events: 01
+bme280_reg_read: start=0xf3, size=1
+bme280_reg_read: start=0xf7, size=8
+bme280_fetch: temperature=30.430000 °C, pressure=100.512207 mbar, humidity=80.862305 %
+baro0: timestamp:37190000 value1:100.51 value2:30.43
+sensor_pollnotify: Report events: 01
+bme280_reg_read: start=0xf3, size=1
+bme280_reg_read: start=0xf7, size=8
+bme280_fetch: temperature=30.430000 °C, pressure=100.512207 mbar, humidity=80.862305 %
+baro0: timestamp:37210000 value1:100.51 value2:30.43
+sensor_pollnotify: Report events: 01
+bme280_reg_read: start=0xf3, size=1
+bme280_reg_read: start=0xf7, size=8
+bme280_fetch: temperature=30.430000 °C, pressure=100.512207 mbar, humidity=80.862305 %
+baro0: timestamp:37230000 value1:100.51 value2:30.43
+sensor_pollnotify: Report events: 01
+bme280_reg_read: start=0xf3, size=1
+bme280_reg_read: start=0xf7, size=8
+bme280_fetch: temperature=30.430000 °C, pressure=100.512207 mbar, humidity=80.862305 %
+baro0: timestamp:37250000 value1:100.51 value2:30.43
+sensor_pollnotify: Report events: 01
+bme280_reg_read: start=0xf3, size=1
+bme280_reg_read: start=0xf7, size=8
+bme280_fetch: temperature=30.430000 °C, pressure=100.512207 mbar, humidity=80.862305 %
+baro0: timestamp:37270000 value1:100.51 value2:30.43
+SensorTest: Received message: baro0, number:10/10
+sensor_ioctl: cmd=a80 arg=00000000
+bme280_activate: TODO enable=0
+
+nsh> sensortest -n 10 baro0
+sensor_ioctl: cmd=a81 arg=4201c394
+bme280_set_interval: TODO period_us=1107411860
+bme280_set_standby: TODO value=5
+sensor_ioctl: cmd=a82 arg=4201c398
+sensor_ioctl: cmd=a80 arg=00000001
+bme280_activate: TODO enable=1
+SensorTest: Test /dev/sensor/baro0 with interval(1000000us), latency(0us)
+sensor_pollnotify: Report events: 01
+bme280_reg_read: start=0xf3, size=1
+bme280_reg_read: start=0xf7, size=8
+bme280_fetch: temperature=30.440001 °C, pressure=100.513359 mbar, humidity=81.337891 %
+baro0: timestamp:39370000 value1:100.51 value2:30.44
+sensor_pollnotify: Report events: 01
+bme280_reg_read: start=0xf3, size=1
+bme280_reg_read: start=0xf7, size=8
+bme280_fetch: temperature=30.440001 °C, pressure=100.513359 mbar, humidity=81.337891 %
+baro0: timestamp:39390000 value1:100.51 value2:30.44
+sensor_pollnotify: Report events: 01
+bme280_reg_read: start=0xf3, size=1
+bme280_reg_read: start=0xf7, size=8
+bme280_fetch: temperature=30.440001 °C, pressure=100.513359 mbar, humidity=81.337891 %
+baro0: timestamp:39410000 value1:100.51 value2:30.44
+sensor_pollnotify: Report events: 01
+bme280_reg_read: start=0xf3, size=1
+bme280_reg_read: start=0xf7, size=8
+bme280_fetch: temperature=30.440001 °C, pressure=100.513359 mbar, humidity=81.337891 %
+baro0: timestamp:39430000 value1:100.51 value2:30.44
+sensor_pollnotify: Report events: 01
+bme280_reg_read: start=0xf3, size=1
+bme280_reg_read: start=0xf7, size=8
+bme280_fetch: temperature=30.440001 °C, pressure=100.513359 mbar, humidity=81.337891 %
+baro0: timestamp:39450000 value1:100.51 value2:30.44
+sensor_pollnotify: Report events: 01
+bme280_reg_read: start=0xf3, size=1
+bme280_reg_read: start=0xf7, size=8
+bme280_fetch: temperature=30.440001 °C, pressure=100.513359 mbar, humidity=81.337891 %
+baro0: timestamp:39470000 value1:100.51 value2:30.44
+sensor_pollnotify: Report events: 01
+bme280_reg_read: start=0xf3, size=1
+bme280_reg_read: start=0xf7, size=8
+bme280_fetch: temperature=30.440001 °C, pressure=100.513359 mbar, humidity=81.337891 %
+baro0: timestamp:39490000 value1:100.51 value2:30.44
+sensor_pollnotify: Report events: 01
+bme280_reg_read: start=0xf3, size=1
+bme280_reg_read: start=0xf7, size=8
+bme280_fetch: temperature=30.440001 °C, pressure=100.513359 mbar, humidity=81.337891 %
+baro0: timestamp:39510000 value1:100.51 value2:30.44
+sensor_pollnotify: Report events: 01
+bme280_reg_read: start=0xf3, size=1
+bme280_reg_read: start=0xf7, size=8
+bme280_fetch: temperature=30.440001 °C, pressure=100.513359 mbar, humidity=81.337891 %
+baro0: timestamp:39530000 value1:100.51 value2:30.44
+sensor_pollnotify: Report events: 01
+bme280_reg_read: start=0xf3, size=1
+bme280_reg_read: start=0xf7, size=8
+bme280_fetch: temperature=30.440001 °C, pressure=100.513359 mbar, humidity=81.337891 %
+baro0: timestamp:39550000 value1:100.51 value2:30.44
+SensorTest: Received message: baro0, number:10/10
+sensor_ioctl: cmd=a80 arg=00000000
+bme280_activate: TODO enable=0
+nsh>
+```
+
+Detailed Log:
+
 ```text
 gpio_pin_register: Registering /dev/gpio0
 gpio_pin_register: Registering /dev/gpio1
