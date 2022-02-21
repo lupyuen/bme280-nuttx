@@ -678,9 +678,12 @@ https://docs.zephyrproject.org/latest/reference/peripherals/sensor.html
 To add this repo to your NuttX project...
 
 ```bash
-cd nuttx/drivers/sensors
+cd nuttx/nuttx/drivers/sensors
 git submodule add https://github.com/lupyuen/bme280-nuttx bme280
 ln -s bme280/bundle.c bme280.c
+
+cd nuttx/nuttx/include/nuttx/sensors
+ln -s ../../../drivers/sensors/bme280/bundle.h bme280.h
 ```
 
 Next update the Makefile and Kconfig...

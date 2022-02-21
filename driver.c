@@ -282,35 +282,6 @@ static int bme280_putreg8(FAR struct device *priv, uint8_t regaddr,
 }
 
 /****************************************************************************
- * Name: bme280_checkid
- *
- * Description:
- *   Read and verify the BME280 chip ID
- *
- ****************************************************************************/
-
-static int bme280_checkid(FAR struct device *priv)
-{
-  uint8_t devid = 0;
-
-  /* Read device ID */
-
-  devid = bme280_getreg8(priv, BME280_DEVID);
-  up_mdelay(1);
-  sninfo("devid: 0x%02x\n", devid);
-
-  if (devid != (uint16_t) DEVID)
-    {
-      /* ID is not Correct */
-
-      snerr("Wrong Device ID! %02x\n", devid);
-      return -ENODEV;
-    }
-
-  return OK;
-}
-
-/****************************************************************************
  * Name: bme280_set_standby
  *
  * Description:
@@ -341,73 +312,6 @@ static int bme280_set_standby(FAR struct device *priv, uint8_t value)
     }
 
   return OK;
-}
-
-/****************************************************************************
- * Name: bme280_initialize
- *
- * Description:
- *   Initialize BME280 device
- *
- ****************************************************************************/
-
-static int bme280_initialize(FAR struct device *priv)
-{
-  uint8_t buf[24];
-  int ret;
-
-  /* Get calibration data. */
-
-  ret = bme280_getregs(priv, BME280_DIG_T1_LSB, buf, 24);
-  if (ret < 0)
-    {
-      return ret;
-    }
-
-#ifdef TODO
-  priv->calib.t1 = (uint16_t)buf[1]  << 8 | buf[0];
-  priv->calib.t2 = (int16_t) buf[3]  << 8 | buf[2];
-  priv->calib.t3 = (int16_t) buf[5]  << 8 | buf[4];
-
-  priv->calib.p1 = (uint16_t)buf[7]  << 8 | buf[6];
-  priv->calib.p2 = (int16_t) buf[9]  << 8 | buf[8];
-  priv->calib.p3 = (int16_t) buf[11] << 8 | buf[10];
-  priv->calib.p4 = (int16_t) buf[13] << 8 | buf[12];
-  priv->calib.p5 = (int16_t) buf[15] << 8 | buf[14];
-  priv->calib.p6 = (int16_t) buf[17] << 8 | buf[16];
-  priv->calib.p7 = (int16_t) buf[19] << 8 | buf[18];
-  priv->calib.p8 = (int16_t) buf[21] << 8 | buf[20];
-  priv->calib.p9 = (int16_t) buf[23] << 8 | buf[22];
-
-  sninfo("T1 = %u\n", priv->calib.t1);
-  sninfo("T2 = %d\n", priv->calib.t2);
-  sninfo("T3 = %d\n", priv->calib.t3);
-
-  sninfo("P1 = %u\n", priv->calib.p1);
-  sninfo("P2 = %d\n", priv->calib.p2);
-  sninfo("P3 = %d\n", priv->calib.p3);
-  sninfo("P4 = %d\n", priv->calib.p4);
-  sninfo("P5 = %d\n", priv->calib.p5);
-  sninfo("P6 = %d\n", priv->calib.p6);
-  sninfo("P7 = %d\n", priv->calib.p7);
-  sninfo("P8 = %d\n", priv->calib.p8);
-  sninfo("P9 = %d\n", priv->calib.p9);
-#endif  //  TODO
-
-  /* Set power mode to sleep */
-
-  bme280_putreg8(priv, BME280_CTRL_MEAS, BME280_SLEEP_MODE);
-
-  /* Set stand-by time to 0.5 ms, no IIR filter */
-
-  ret = bme280_set_standby(priv, BME280_STANDBY_05_MS);
-  if (ret != OK)
-    {
-      snerr("Failed to set value for standby time.\n");
-      return -1;
-    }
-
-  return ret;
 }
 
 /****************************************************************************
@@ -470,11 +374,13 @@ static int bme280_set_interval(FAR struct sensor_lowerhalf_s *lower,
 static int bme280_activate(FAR struct sensor_lowerhalf_s *lower,
                            bool enable)
 {
+  sninfo("TODO enable=%d\n", enable); ////
   FAR struct device *priv = container_of(lower,
                                                FAR struct device,
                                                sensor_lower);
-  int ret;
+  int ret = 0;
 
+#ifdef TODO
   if (enable)
     {
       /* Set power mode to normal and standard sampling resolution. */
@@ -493,6 +399,7 @@ static int bme280_activate(FAR struct sensor_lowerhalf_s *lower,
     {
       priv->activated = enable;
     }
+#endif  //  TODO
 
   return ret;
 }
@@ -605,32 +512,33 @@ int bme280_register(int devno, FAR struct i2c_master_s *i2c)
       return -ENOMEM;
     }
 
-  #warning TODO: Init char *name;                   /* Name of the device */
-  #warning TODO: Init struct bme280_data *data;     /* Compensation parameters */
+  /* Initialize the Compensation Parameters */
 
-  priv->i2c = i2c;
+  struct bme280_data *data = (FAR struct bme280_data *)kmm_zalloc(sizeof(struct bme280_data));
+  if (!data)
+    {
+      snerr("Failed to allocate data\n");
+      kmm_free(priv);
+      return -ENOMEM;
+    }
+
+  priv->data = data;
+  priv->i2c  = i2c;
   priv->addr = BME280_ADDR;
   priv->freq = BME280_FREQ;
+  priv->name = "BME280";
 
   priv->sensor_lower.ops = &g_sensor_ops;
   priv->sensor_lower.type = SENSOR_TYPE_BAROMETER;
 
-  /* Check Device ID */
+  /* Initialize the sensor */
 
-  ret = bme280_checkid(priv);
+  ret = bme280_chip_init(priv);
 
   if (ret < 0)
     {
       snerr("Failed to register driver: %d\n", ret);
-      kmm_free(priv);
-      return ret;
-    }
-
-  ret = bme280_initialize(priv);
-
-  if (ret < 0)
-    {
-      snerr("Failed to initialize physical device bme280:%d\n", ret);
+      kmm_free(data);
       kmm_free(priv);
       return ret;
     }
@@ -642,6 +550,7 @@ int bme280_register(int devno, FAR struct i2c_master_s *i2c)
   if (ret < 0)
     {
       snerr("Failed to register driver: %d\n", ret);
+      kmm_free(data);
       kmm_free(priv);
     }
 
