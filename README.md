@@ -32,7 +32,7 @@ Connect BME280 to Pine64 PineCone BL602...
 
 The I2C Pins on BL602 are defined here...
 
-https://github.com/lupyuen/incubator-nuttx/blob/bme280/boards/risc-v/bl602/bl602evb/include/board.h#L85-L88
+https://github.com/lupyuen/incubator-nuttx/blob/bmp280/boards/risc-v/bl602/bl602evb/include/board.h#L85-L88
 
 ```c
 /* I2C Configuration */
@@ -43,7 +43,7 @@ https://github.com/lupyuen/incubator-nuttx/blob/bme280/boards/risc-v/bl602/bl602
 
 We disabled the UART1 Port because it uses the same pins as I2C...
 
-https://github.com/lupyuen/incubator-nuttx/blob/bme280/boards/risc-v/bl602/bl602evb/include/board.h#L63-L68
+https://github.com/lupyuen/incubator-nuttx/blob/bmp280/boards/risc-v/bl602/bl602evb/include/board.h#L63-L68
 
 ```c
 #ifdef TODO  /* Remember to check for duplicate pins! */
@@ -89,7 +89,7 @@ Configure NuttX to enable the I2C Character Driver, BMP280 Driver and Sensor Tes
 
 Register BMP280 Driver at startup...
 
-https://github.com/lupyuen/incubator-nuttx/blob/bme280/boards/risc-v/bl602/bl602evb/src/bl602_bringup.c#L623-L640
+https://github.com/lupyuen/incubator-nuttx/blob/bmp280/boards/risc-v/bl602/bl602evb/src/bl602_bringup.c#L623-L640
 
 ```c
 #ifdef CONFIG_SENSORS_BMP280
@@ -123,7 +123,7 @@ int bl602_bringup(void)
 
 For testing, we change the I2C Address and Device ID for BME280...
 
-https://github.com/lupyuen/incubator-nuttx/blob/bme280/drivers/sensors/bmp280.c#L45-L57
+https://github.com/lupyuen/incubator-nuttx/blob/bmp280/drivers/sensors/bmp280.c#L45-L57
 
 ```c
 ////  Previously: I2C Address of BMP280
@@ -186,7 +186,7 @@ Read [0xEF]
 
 BL602 NuttX I2C Driver doesn't log the data transferred ... Let's log ourselves
 
-https://github.com/lupyuen/incubator-nuttx/blob/bme280/arch/risc-v/src/bl602/bl602_i2c.c#L194-L197
+https://github.com/lupyuen/incubator-nuttx/blob/bmp280/arch/risc-v/src/bl602/bl602_i2c.c#L194-L197
 
 ```c
 static void bl602_i2c_send_data(struct bl602_i2c_priv_s *priv)
@@ -198,7 +198,7 @@ static void bl602_i2c_send_data(struct bl602_i2c_priv_s *priv)
 }
 ```
 
-https://github.com/lupyuen/incubator-nuttx/blob/bme280/arch/risc-v/src/bl602/bl602_i2c.c#L207-L216
+https://github.com/lupyuen/incubator-nuttx/blob/bmp280/arch/risc-v/src/bl602/bl602_i2c.c#L207-L216
 
 ```c
 static void bl602_i2c_recvdata(struct bl602_i2c_priv_s *priv)
@@ -209,7 +209,7 @@ static void bl602_i2c_recvdata(struct bl602_i2c_priv_s *priv)
   i2cinfo("count=%d, temp=0x%x\n", count, temp); ////
 ```
 
-https://github.com/lupyuen/incubator-nuttx/blob/bme280/arch/risc-v/src/bl602/bl602_i2c.c#L740-L742
+https://github.com/lupyuen/incubator-nuttx/blob/bmp280/arch/risc-v/src/bl602/bl602_i2c.c#L740-L742
 
 ```c
 static int bl602_i2c_transfer(struct i2c_master_s *dev,
@@ -233,7 +233,7 @@ https://lupyuen.github.io/articles/i2c#set-i2c-device-address-and-register-addre
 
 BL602 NuttX I2C Driver needs us to provide the I2C Sub Address (Register ID)...
 
-https://github.com/lupyuen/incubator-nuttx/blob/bme280/arch/risc-v/src/bl602/bl602_i2c.c#L719-L738
+https://github.com/lupyuen/incubator-nuttx/blob/bmp280/arch/risc-v/src/bl602/bl602_i2c.c#L719-L738
 
 ```c
       /* if msgs[i].flag I2C_M_NOSTOP,means start i2c with subddr */
@@ -260,7 +260,7 @@ https://github.com/lupyuen/incubator-nuttx/blob/bme280/arch/risc-v/src/bl602/bl6
 
 Here's how we patch the NuttX BMP280 Driver to send the Register ID as I2C Sub Address (instead of I2C Data)
 
-https://github.com/lupyuen/incubator-nuttx/blob/bme280/drivers/sensors/bmp280.c#L202-L217
+https://github.com/lupyuen/incubator-nuttx/blob/bmp280/drivers/sensors/bmp280.c#L202-L217
 
 ```c
 static uint8_t bmp280_getreg8(FAR struct bmp280_dev_s *priv, uint8_t regaddr)
@@ -276,7 +276,7 @@ static uint8_t bmp280_getreg8(FAR struct bmp280_dev_s *priv, uint8_t regaddr)
   msg[0].length    = 1;
 ```
 
-https://github.com/lupyuen/incubator-nuttx/blob/bme280/drivers/sensors/bmp280.c#L244-L257
+https://github.com/lupyuen/incubator-nuttx/blob/bmp280/drivers/sensors/bmp280.c#L244-L257
 
 ```c
 static int bmp280_getregs(FAR struct bmp280_dev_s *priv, uint8_t regaddr,
@@ -298,7 +298,7 @@ static int bmp280_getregs(FAR struct bmp280_dev_s *priv, uint8_t regaddr,
 
 We don't need to set the I2C Sub Address when writing registers...
 
-https://github.com/lupyuen/incubator-nuttx/blob/bme280/drivers/sensors/bmp280.c#L286-L300
+https://github.com/lupyuen/incubator-nuttx/blob/bmp280/drivers/sensors/bmp280.c#L286-L300
 
 ```c
 static int bmp280_putreg8(FAR struct bmp280_dev_s *priv, uint8_t regaddr,
