@@ -25,6 +25,12 @@
 
 #include "bme280.h"
 
+#ifdef __NuttX__
+#define NL "\n"  //  NuttX requires newline when logging
+#else
+#define NL       //  Zephyr doesn't need newline
+#endif  //  __NuttX__
+
 #ifndef __NuttX__
 LOG_MODULE_REGISTER(BME280, CONFIG_SENSOR_LOG_LEVEL);
 #endif  //  !__NuttX__
@@ -307,7 +313,7 @@ static int bme280_read_compensation(const struct device *dev)
 			      (uint8_t *)buf, sizeof(buf));
 
 	if (err < 0) {
-		LOG_DBG("COMP_START read failed: %d", err);
+		LOG_DBG("COMP_START read failed: %d" NL, err);
 		return err;
 	}
 
@@ -329,13 +335,13 @@ static int bme280_read_compensation(const struct device *dev)
 		err = bme280_reg_read(dev, BME280_REG_HUM_COMP_PART1,
 				      &data->dig_h1, 1);
 		if (err < 0) {
-			LOG_DBG("HUM_COMP_PART1 read failed: %d", err);
+			LOG_DBG("HUM_COMP_PART1 read failed: %d" NL, err);
 			return err;
 		}
 
 		err = bme280_reg_read(dev, BME280_REG_HUM_COMP_PART2, hbuf, 7);
 		if (err < 0) {
-			LOG_DBG("HUM_COMP_PART2 read failed: %d", err);
+			LOG_DBG("HUM_COMP_PART2 read failed: %d" NL, err);
 			return err;
 		}
 
@@ -356,29 +362,29 @@ static int bme280_chip_init(const struct device *dev)
 
 	err = bme280_bus_check(dev);
 	if (err < 0) {
-		LOG_DBG("bus check failed: %d", err);
+		LOG_DBG("bus check failed: %d" NL, err);
 		return err;
 	}
 
 	err = bme280_reg_read(dev, BME280_REG_ID, &data->chip_id, 1);
 	if (err < 0) {
-		LOG_DBG("ID read failed: %d", err);
+		LOG_DBG("ID read failed: %d" NL, err);
 		return err;
 	}
 
 	if (data->chip_id == BME280_CHIP_ID) {
-		LOG_DBG("ID OK");
+		LOG_DBG("ID OK" NL);
 	} else if (data->chip_id == BMP280_CHIP_ID_MP ||
 		   data->chip_id == BMP280_CHIP_ID_SAMPLE_1) {
-		LOG_DBG("ID OK (BMP280)");
+		LOG_DBG("ID OK (BMP280)" NL);
 	} else {
-		LOG_DBG("bad chip id 0x%x", data->chip_id);
+		LOG_DBG("bad chip id 0x%x" NL, data->chip_id);
 		return -ENOTSUP;
 	}
 
 	err = bme280_reg_write(dev, BME280_REG_RESET, BME280_CMD_SOFT_RESET);
 	if (err < 0) {
-		LOG_DBG("Soft-reset failed: %d", err);
+		LOG_DBG("Soft-reset failed: %d" NL, err);
 	}
 
 	err = bme280_wait_until_ready(dev);
@@ -395,7 +401,7 @@ static int bme280_chip_init(const struct device *dev)
 		err = bme280_reg_write(dev, BME280_REG_CTRL_HUM,
 				       BME280_HUMIDITY_OVER);
 		if (err < 0) {
-			LOG_DBG("CTRL_HUM write failed: %d", err);
+			LOG_DBG("CTRL_HUM write failed: %d" NL, err);
 			return err;
 		}
 	}
@@ -403,20 +409,20 @@ static int bme280_chip_init(const struct device *dev)
 	err = bme280_reg_write(dev, BME280_REG_CTRL_MEAS,
 			       BME280_CTRL_MEAS_VAL);
 	if (err < 0) {
-		LOG_DBG("CTRL_MEAS write failed: %d", err);
+		LOG_DBG("CTRL_MEAS write failed: %d" NL, err);
 		return err;
 	}
 
 	err = bme280_reg_write(dev, BME280_REG_CONFIG,
 			       BME280_CONFIG_VAL);
 	if (err < 0) {
-		LOG_DBG("CONFIG write failed: %d", err);
+		LOG_DBG("CONFIG write failed: %d" NL, err);
 		return err;
 	}
 	/* Wait for the sensor to be ready */
 	k_sleep(K_MSEC(1));
 
-	LOG_DBG("\"%s\" OK", dev->name);
+	LOG_DBG("\"%s\" OK" NL, dev->name);
 	return 0;
 }
 
@@ -438,7 +444,7 @@ static int bme280_pm_action(const struct device *dev,
 			BME280_CTRL_MEAS_OFF_VAL);
 
 		if (ret < 0) {
-			LOG_DBG("CTRL_MEAS write failed: %d", ret);
+			LOG_DBG("CTRL_MEAS write failed: %d" NL, ret);
 		}
 		break;
 	default:
