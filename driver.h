@@ -1,5 +1,5 @@
 /****************************************************************************
- * include/nuttx/sensors/bme280.h
+ * drivers/sensors/bme280/driver.h
  *
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with

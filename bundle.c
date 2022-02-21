@@ -54,6 +54,3 @@ static int bme280_reg_write(const struct device *dev, uint8_t reg,
 
 //  Embed NuttX Driver Shell
 #include "bme280/driver.c"
-
-//  TODO: Init char *name;                   /* Name of the device */
-//  TODO: Init struct bme280_data *data;     /* Compensation parameters */

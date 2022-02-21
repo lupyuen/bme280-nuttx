@@ -1,5 +1,5 @@
 /****************************************************************************
- * drivers/sensors/bme280.c
+ * drivers/sensors/bme280/driver.c
  *
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -33,7 +33,7 @@
 #include <nuttx/kmalloc.h>
 #include <nuttx/fs/fs.h>
 #include <nuttx/i2c/i2c_master.h>
-#include <nuttx/sensors/bme280.h>
+#include "driver.h" //// Previously: <nuttx/sensors/bme280.h>
 #include <nuttx/sensors/sensor.h>
 
 #if defined(CONFIG_I2C) && defined(CONFIG_SENSORS_BME280)
@@ -128,43 +128,12 @@
 #define COMBINE(d) (((int)(d)[0] << 12) | ((int)(d)[1] << 4) | ((int)(d)[2] >> 4))
 
 /****************************************************************************
- * Private Type Definitions
- ****************************************************************************/
-
-struct bme280_dev_s
-{
-  FAR struct sensor_lowerhalf_s sensor_lower;
-  FAR struct i2c_master_s *i2c; /* I2C interface */
-  uint8_t addr;                 /* BME280 I2C address */
-  int freq;                     /* BME280 Frequency <= 3.4MHz */
-  bool activated;
-
-  struct bme280_calib_s
-  {
-    uint16_t t1;
-    int16_t  t2;
-    int16_t  t3;
-    uint16_t p1;
-    int16_t  p2;
-    int16_t  p3;
-    int16_t  p4;
-    int16_t  p5;
-    int16_t  p6;
-    int16_t  p7;
-    int16_t  p8;
-    int16_t  p9;
-  } calib;
-
-  int32_t  tempfine;
-};
-
-/****************************************************************************
  * Private Function Prototypes
  ****************************************************************************/
 
-static uint8_t bme280_getreg8(FAR struct bme280_dev_s *priv,
+static uint8_t bme280_getreg8(FAR struct device *priv,
                               uint8_t regaddr);
-static int bme280_putreg8(FAR struct bme280_dev_s *priv, uint8_t regaddr,
+static int bme280_putreg8(FAR struct device *priv, uint8_t regaddr,
                           uint8_t regval);
 
 /* Sensor methods */
@@ -199,7 +168,7 @@ static const struct sensor_ops_s g_sensor_ops =
  *
  ****************************************************************************/
 
-static uint8_t bme280_getreg8(FAR struct bme280_dev_s *priv, uint8_t regaddr)
+static uint8_t bme280_getreg8(FAR struct device *priv, uint8_t regaddr)
 {
   sninfo("regaddr=0x%02x\n", regaddr); ////
   struct i2c_msg_s msg[2];
@@ -243,7 +212,7 @@ static uint8_t bme280_getreg8(FAR struct bme280_dev_s *priv, uint8_t regaddr)
  *
  ****************************************************************************/
 
-static int bme280_getregs(FAR struct bme280_dev_s *priv, uint8_t regaddr,
+static int bme280_getregs(FAR struct device *priv, uint8_t regaddr,
                           uint8_t *rxbuffer, uint8_t length)
 {
   sninfo("regaddr=0x%02x, length=%d\n", regaddr, length); ////
@@ -286,7 +255,7 @@ static int bme280_getregs(FAR struct bme280_dev_s *priv, uint8_t regaddr,
  *
  ****************************************************************************/
 
-static int bme280_putreg8(FAR struct bme280_dev_s *priv, uint8_t regaddr,
+static int bme280_putreg8(FAR struct device *priv, uint8_t regaddr,
                           uint8_t regval)
 {
   sninfo("regaddr=0x%02x, regval=0x%02x\n", regaddr, regval); ////
@@ -320,7 +289,7 @@ static int bme280_putreg8(FAR struct bme280_dev_s *priv, uint8_t regaddr,
  *
  ****************************************************************************/
 
-static int bme280_checkid(FAR struct bme280_dev_s *priv)
+static int bme280_checkid(FAR struct device *priv)
 {
   uint8_t devid = 0;
 
@@ -349,7 +318,7 @@ static int bme280_checkid(FAR struct bme280_dev_s *priv)
  *
  ****************************************************************************/
 
-static int bme280_set_standby(FAR struct bme280_dev_s *priv, uint8_t value)
+static int bme280_set_standby(FAR struct device *priv, uint8_t value)
 {
   uint8_t v_data_u8;
   uint8_t v_sb_u8;
@@ -382,7 +351,7 @@ static int bme280_set_standby(FAR struct bme280_dev_s *priv, uint8_t value)
  *
  ****************************************************************************/
 
-static int bme280_initialize(FAR struct bme280_dev_s *priv)
+static int bme280_initialize(FAR struct device *priv)
 {
   uint8_t buf[24];
   int ret;
@@ -395,6 +364,7 @@ static int bme280_initialize(FAR struct bme280_dev_s *priv)
       return ret;
     }
 
+#ifdef TODO
   priv->calib.t1 = (uint16_t)buf[1]  << 8 | buf[0];
   priv->calib.t2 = (int16_t) buf[3]  << 8 | buf[2];
   priv->calib.t3 = (int16_t) buf[5]  << 8 | buf[4];
@@ -422,6 +392,7 @@ static int bme280_initialize(FAR struct bme280_dev_s *priv)
   sninfo("P7 = %d\n", priv->calib.p7);
   sninfo("P8 = %d\n", priv->calib.p8);
   sninfo("P9 = %d\n", priv->calib.p9);
+#endif  //  TODO
 
   /* Set power mode to sleep */
 
@@ -440,100 +411,14 @@ static int bme280_initialize(FAR struct bme280_dev_s *priv)
 }
 
 /****************************************************************************
- * Name: bme280_compensate
- *
- * Description:
- *   calculate compensate tempreture
- *
- * Input Parameters:
- *   temp - uncompensate value of tempreture.
- *
- * Returned Value:
- *   calculate result of compensate tempreture.
- *
- ****************************************************************************/
-
-static int32_t bme280_compensate_temp(FAR struct bme280_dev_s *priv,
-                                   int32_t temp)
-{
-  struct bme280_calib_s *c = &priv->calib;
-  int32_t var1;
-  int32_t var2;
-
-  var1 = ((((temp >> 3) - ((int32_t)c->t1 << 1))) * ((int32_t)c->t2)) >> 11;
-  var2 = (((((temp >> 4) - ((int32_t)c->t1)) *
-            ((temp >> 4) - ((int32_t)c->t1))) >> 12) *
-          ((int32_t)c->t3)) >> 14;
-
-  priv->tempfine = var1 + var2;
-
-  return (priv->tempfine * 5 + 128) >> 8;
-}
-
-/****************************************************************************
- * Name: bme280_compensate_press
- *
- * Description:
- *   calculate compensate pressure
- *
- * Input Parameters:
- *   press - uncompensate value of pressure.
- *
- * Returned Value:
- *   calculate result of compensate pressure.
- *
- ****************************************************************************/
-
-static uint32_t bme280_compensate_press(FAR struct bme280_dev_s *priv,
-                                        uint32_t press)
-{
-  struct bme280_calib_s *c = &priv->calib;
-  int32_t var1;
-  int32_t var2;
-  uint32_t p;
-
-  var1 = (priv->tempfine >> 1) - 64000;
-  var2 = (((var1 >> 2) * (var1 >> 2)) >> 11) * ((int32_t)c->p6);
-  var2 = var2 + ((var1 * ((int32_t)c->p5)) << 1);
-  var2 = (var2 >> 2) + (((int32_t)c->p4) << 16);
-  var1 = (((c->p3 * (((var1 >> 2) * (var1 >> 2)) >> 13)) >> 3) +
-          ((((int32_t)c->p2) * var1) >> 1)) >> 18;
-  var1 = (((32768 + var1) * ((int32_t)c->p1)) >> 15);
-
-  /* avoid exception caused by division by zero */
-
-  if (var1 == 0)
-    {
-      return 0;
-    }
-
-  p = (((uint32_t)((0x100000) - press) - (var2 >> 12))) * 3125;
-
-  if (p < 0x80000000)
-    {
-      p = (p << 1) / ((uint32_t)var1);
-    }
-  else
-    {
-      p = (p / (uint32_t)var1) * 2;
-    }
-
-  var1 = ((int32_t)c->p9 * ((int32_t)(((p >> 3) * (p >> 3)) >> 13))) >> 12;
-  var2 = ((int32_t)(p >> 2) * c->p8) >> 13;
-  p = (uint32_t)((int32_t)p + ((var1 + var2 + c->p7) >> 4));
-
-  return p;
-}
-
-/****************************************************************************
  * Name: bme280_set_interval
  ****************************************************************************/
 
 static int bme280_set_interval(FAR struct sensor_lowerhalf_s *lower,
                                FAR unsigned int *period_us)
 {
-  FAR struct bme280_dev_s *priv = container_of(lower,
-                                               FAR struct bme280_dev_s,
+  FAR struct device *priv = container_of(lower,
+                                               FAR struct device,
                                                sensor_lower);
   int ret = 0;
 
@@ -585,8 +470,8 @@ static int bme280_set_interval(FAR struct sensor_lowerhalf_s *lower,
 static int bme280_activate(FAR struct sensor_lowerhalf_s *lower,
                            bool enable)
 {
-  FAR struct bme280_dev_s *priv = container_of(lower,
-                                               FAR struct bme280_dev_s,
+  FAR struct device *priv = container_of(lower,
+                                               FAR struct device,
                                                sensor_lower);
   int ret;
 
@@ -619,8 +504,8 @@ static int bme280_activate(FAR struct sensor_lowerhalf_s *lower,
 static int bme280_fetch(FAR struct sensor_lowerhalf_s *lower,
                         FAR char *buffer, size_t buflen)
 {
-  FAR struct bme280_dev_s *priv = container_of(lower,
-                                               FAR struct bme280_dev_s,
+  FAR struct device *priv = container_of(lower,
+                                               FAR struct device,
                                                sensor_lower);
 
   uint8_t buf[6];
@@ -706,17 +591,20 @@ static int bme280_fetch(FAR struct sensor_lowerhalf_s *lower,
 
 int bme280_register(int devno, FAR struct i2c_master_s *i2c)
 {
-  FAR struct bme280_dev_s *priv;
+  FAR struct device *priv;
   int ret;
 
   /* Initialize the BME280 device structure */
 
-  priv = (FAR struct bme280_dev_s *)kmm_zalloc(sizeof(struct bme280_dev_s));
+  priv = (FAR struct device *)kmm_zalloc(sizeof(struct device));
   if (!priv)
     {
       snerr("Failed to allocate instance\n");
       return -ENOMEM;
     }
+
+  #warning TODO: Init char *name;                   /* Name of the device */
+  #warning TODO: Init struct bme280_data *data;     /* Compensation parameters */
 
   priv->i2c = i2c;
   priv->addr = BME280_ADDR;
