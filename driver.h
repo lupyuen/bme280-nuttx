@@ -1,5 +1,5 @@
 /****************************************************************************
- * include/nuttx/sensors/bmp280.h
+ * include/nuttx/sensors/bme280.h
  *
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -18,8 +18,8 @@
  *
  ****************************************************************************/
 
-#ifndef __INCLUDE_NUTTX_SENSORS_BMP280_H
-#define __INCLUDE_NUTTX_SENSORS_BMP280_H
+#ifndef __INCLUDE_NUTTX_SENSORS_BME280_H
+#define __INCLUDE_NUTTX_SENSORS_BME280_H
 
 /****************************************************************************
  * Included Files
@@ -27,7 +27,7 @@
 
 #include <nuttx/config.h>
 
-#if defined(CONFIG_I2C) && (defined(CONFIG_SENSORS_BMP280) || defined(CONFIG_SENSORS_BMP280_SCU))
+#if defined(CONFIG_I2C) && (defined(CONFIG_SENSORS_BME280) || defined(CONFIG_SENSORS_BME280_SCU))
 
 /****************************************************************************
  * Pre-processor Definitions
@@ -37,8 +37,8 @@
 
 /* Prerequisites:
  *
- * CONFIG_BMP280
- *   Enables support for the BMP280 driver
+ * CONFIG_BME280
+ *   Enables support for the BME280 driver
  */
 
 /****************************************************************************
@@ -70,14 +70,14 @@ extern "C"
 
 /* Standby duration */
 
-#define BMP280_STANDBY_05_MS   (0x00) /* 0.5 ms */
-#define BMP280_STANDBY_63_MS   (0x01) /* 62.5 ms */
-#define BMP280_STANDBY_125_MS  (0x02) /* 125 ms */
-#define BMP280_STANDBY_250_MS  (0x03) /* 250 ms */
-#define BMP280_STANDBY_500_MS  (0x04) /* 500 ms */
-#define BMP280_STANDBY_1000_MS (0x05) /* 1000 ms */
-#define BMP280_STANDBY_2000_MS (0x06) /* 2000 ms */
-#define BMP280_STANDBY_4000_MS (0x07) /* 4000 ms */
+#define BME280_STANDBY_05_MS   (0x00) /* 0.5 ms */
+#define BME280_STANDBY_63_MS   (0x01) /* 62.5 ms */
+#define BME280_STANDBY_125_MS  (0x02) /* 125 ms */
+#define BME280_STANDBY_250_MS  (0x03) /* 250 ms */
+#define BME280_STANDBY_500_MS  (0x04) /* 500 ms */
+#define BME280_STANDBY_1000_MS (0x05) /* 1000 ms */
+#define BME280_STANDBY_2000_MS (0x06) /* 2000 ms */
+#define BME280_STANDBY_4000_MS (0x07) /* 4000 ms */
 
 /* Enable compensate of sensing values (no SCU bus only)
  *
@@ -88,15 +88,15 @@ extern "C"
 
 /* Get sensor predefined adjustment values (SCU bus only)
  *
- * Arg: Pointer of struct bmp280_press_adj_s (pressure)
- *      Pointer of struct bmp280_temp_adj_s (temperature)
+ * Arg: Pointer of struct bme280_press_adj_s (pressure)
+ *      Pointer of struct bme280_temp_adj_s (temperature)
  */
 
 #define SNIOC_GETADJ               _SNIOC(0x0002)
 
 /* Set sensor standby duration
  *
- * Arg: BMP280_STANDBY_*_MS
+ * Arg: BME280_STANDBY_*_MS
  */
 
 #define SNIOC_SETSTB               _SNIOC(0x0003)
@@ -108,7 +108,7 @@ extern "C"
 
 #define SNIOC_GET_TEMP             _SNIOC(0x0004)
 
-struct bmp280_press_adj_s
+struct bme280_press_adj_s
 {
   uint16_t  dig_p1; /* calibration P1 data */
   int16_t   dig_p2; /* calibration P2 data */
@@ -121,62 +121,62 @@ struct bmp280_press_adj_s
   int16_t   dig_p9; /* calibration P9 data */
 };
 
-struct bmp280_temp_adj_s
+struct bme280_temp_adj_s
 {
   uint16_t  dig_t1; /* calibration T1 data */
   int16_t   dig_t2; /* calibration T2 data */
   int16_t   dig_t3; /* calibration T3 data */
 };
 
-struct bmp280_meas_s
+struct bme280_meas_s
 {
   uint8_t   msb;    /* meas value MSB */
   uint8_t   lsb;    /* meas value LSB */
   uint8_t   xlsb;   /* meas value XLSB */
 };
 
-#ifdef CONFIG_SENSORS_BMP280_SCU
+#ifdef CONFIG_SENSORS_BME280_SCU
 /****************************************************************************
- * Name: bmp280_init
+ * Name: bme280_init
  *
  * Description:
- *   Initialize BMP280 pressure device
+ *   Initialize BME280 pressure device
  *
  * Input Parameters:
  *   i2c     - An instance of the I2C interface to use to communicate with
- *             BMP280
+ *             BME280
  *
  * Returned Value:
  *   Zero (OK) on success; a negated errno value on failure.
  *
  ****************************************************************************/
 
-int bmp280_init(FAR struct i2c_master_s *i2c, int port);
+int bme280_init(FAR struct i2c_master_s *i2c, int port);
 #endif
 
 /****************************************************************************
- * Name: bmp280_register
+ * Name: bme280_register
  *
  * Description:
- *   Register the BMP280 character device
+ *   Register the BME280 character device
  *
  * Input Parameters:
  *   devno   - Instance number for driver
  *   i2c     - An instance of the I2C interface to use to communicate with
- *             BMP280
+ *             BME280
  *
  * Returned Value:
  *   Zero (OK) on success; a negated errno value on failure.
  *
  ****************************************************************************/
 
-#ifdef CONFIG_SENSORS_BMP280_SCU
-int bmp280press_register(FAR const char *devpath, int minor,
+#ifdef CONFIG_SENSORS_BME280_SCU
+int bme280press_register(FAR const char *devpath, int minor,
                          FAR struct i2c_master_s *i2c, int port);
-int bmp280temp_register(FAR const char *devpath, int minor,
+int bme280temp_register(FAR const char *devpath, int minor,
                         FAR struct i2c_master_s *i2c, int port);
 #else
-int bmp280_register(int devno, FAR struct i2c_master_s *i2c);
+int bme280_register(int devno, FAR struct i2c_master_s *i2c);
 #endif
 
 #undef EXTERN
@@ -184,5 +184,5 @@ int bmp280_register(int devno, FAR struct i2c_master_s *i2c);
 }
 #endif
 
-#endif /* CONFIG_I2C && CONFIG_SENSORS_BMP280 */
-#endif /* __INCLUDE_NUTTX_BMP280_H */
+#endif /* CONFIG_I2C && CONFIG_SENSORS_BME280 */
+#endif /* __INCLUDE_NUTTX_BME280_H */

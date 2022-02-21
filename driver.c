@@ -1,5 +1,5 @@
 /****************************************************************************
- * drivers/sensors/bmp280.c
+ * drivers/sensors/bme280.c
  *
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -33,95 +33,95 @@
 #include <nuttx/kmalloc.h>
 #include <nuttx/fs/fs.h>
 #include <nuttx/i2c/i2c_master.h>
-#include <nuttx/sensors/bmp280.h>
+#include <nuttx/sensors/bme280.h>
 #include <nuttx/sensors/sensor.h>
 
-#if defined(CONFIG_I2C) && defined(CONFIG_SENSORS_BMP280)
+#if defined(CONFIG_I2C) && defined(CONFIG_SENSORS_BME280)
 
 /****************************************************************************
  * Pre-processor Definitions
  ****************************************************************************/
 
-////  Previously: I2C Address of BMP280
-////  #define BMP280_ADDR         0x76
+////  Previously: I2C Address of BME280
+////  #define BME280_ADDR         0x76
 
 #warning Testing: I2C Address of BME280
-#define BMP280_ADDR         0x77 //// BME280
+#define BME280_ADDR         0x77 //// BME280
 
-#define BMP280_FREQ         CONFIG_BMP280_I2C_FREQUENCY
+#define BME280_FREQ         CONFIG_BME280_I2C_FREQUENCY
 
-////  Previously: Device ID of BMP280
+////  Previously: Device ID of BME280
 ////  #define DEVID               0x58
 
 #warning Testing: Device ID of BME280
 #define DEVID               0x60 //// BME280
 
-#define BMP280_DIG_T1_LSB   0x88
-#define BMP280_DIG_T1_MSB   0x89
-#define BMP280_DIG_T2_LSB   0x8a
-#define BMP280_DIG_T2_MSB   0x8b
-#define BMP280_DIG_T3_LSB   0x8c
-#define BMP280_DIG_T3_MSB   0x8d
-#define BMP280_DIG_P1_LSB   0x8e
-#define BMP280_DIG_P1_MSB   0x8f
-#define BMP280_DIG_P2_LSB   0x90
-#define BMP280_DIG_P2_MSB   0x91
-#define BMP280_DIG_P3_LSB   0x92
-#define BMP280_DIG_P3_MSB   0x93
-#define BMP280_DIG_P4_LSB   0x94
-#define BMP280_DIG_P4_MSB   0x95
-#define BMP280_DIG_P5_LSB   0x96
-#define BMP280_DIG_P5_MSB   0x97
-#define BMP280_DIG_P6_LSB   0x98
-#define BMP280_DIG_P6_MSB   0x99
-#define BMP280_DIG_P7_LSB   0x9a
-#define BMP280_DIG_P7_MSB   0x9b
-#define BMP280_DIG_P8_LSB   0x9c
-#define BMP280_DIG_P8_MSB   0x9d
-#define BMP280_DIG_P9_LSB   0x9e
-#define BMP280_DIG_P9_MSB   0x9f
+#define BME280_DIG_T1_LSB   0x88
+#define BME280_DIG_T1_MSB   0x89
+#define BME280_DIG_T2_LSB   0x8a
+#define BME280_DIG_T2_MSB   0x8b
+#define BME280_DIG_T3_LSB   0x8c
+#define BME280_DIG_T3_MSB   0x8d
+#define BME280_DIG_P1_LSB   0x8e
+#define BME280_DIG_P1_MSB   0x8f
+#define BME280_DIG_P2_LSB   0x90
+#define BME280_DIG_P2_MSB   0x91
+#define BME280_DIG_P3_LSB   0x92
+#define BME280_DIG_P3_MSB   0x93
+#define BME280_DIG_P4_LSB   0x94
+#define BME280_DIG_P4_MSB   0x95
+#define BME280_DIG_P5_LSB   0x96
+#define BME280_DIG_P5_MSB   0x97
+#define BME280_DIG_P6_LSB   0x98
+#define BME280_DIG_P6_MSB   0x99
+#define BME280_DIG_P7_LSB   0x9a
+#define BME280_DIG_P7_MSB   0x9b
+#define BME280_DIG_P8_LSB   0x9c
+#define BME280_DIG_P8_MSB   0x9d
+#define BME280_DIG_P9_LSB   0x9e
+#define BME280_DIG_P9_MSB   0x9f
 
-#define BMP280_DEVID        0xd0
-#define BMP280_SOFT_RESET   0xe0
-#define BMP280_STAT         0xf3
-#define BMP280_CTRL_MEAS    0xf4
-#define BMP280_CONFIG       0xf5
-#define BMP280_PRESS_MSB    0xf7
-#define BMP280_PRESS_LSB    0xf8
-#define BMP280_PRESS_XLSB   0xf9
-#define BMP280_TEMP_MSB     0xfa
-#define BMP280_TEMP_LSB     0xfb
-#define BMP280_TEMP_XLSB    0xfc
+#define BME280_DEVID        0xd0
+#define BME280_SOFT_RESET   0xe0
+#define BME280_STAT         0xf3
+#define BME280_CTRL_MEAS    0xf4
+#define BME280_CONFIG       0xf5
+#define BME280_PRESS_MSB    0xf7
+#define BME280_PRESS_LSB    0xf8
+#define BME280_PRESS_XLSB   0xf9
+#define BME280_TEMP_MSB     0xfa
+#define BME280_TEMP_LSB     0xfb
+#define BME280_TEMP_XLSB    0xfc
 
 /* Power modes */
 
-#define BMP280_SLEEP_MODE   (0x00)
-#define BMP280_FORCED_MODE  (0x01)
-#define BMP280_NORMAL_MODE  (0x03)
+#define BME280_SLEEP_MODE   (0x00)
+#define BME280_FORCED_MODE  (0x01)
+#define BME280_NORMAL_MODE  (0x03)
 
 /* Oversampling for temperature. */
 
-#define BMP280_OST_SKIPPED (0x00 << 5)
-#define BMP280_OST_X1      (0x01 << 5)
-#define BMP280_OST_X2      (0x02 << 5)
-#define BMP280_OST_X4      (0x03 << 5)
-#define BMP280_OST_X8      (0x04 << 5)
-#define BMP280_OST_X16     (0x05 << 5)
+#define BME280_OST_SKIPPED (0x00 << 5)
+#define BME280_OST_X1      (0x01 << 5)
+#define BME280_OST_X2      (0x02 << 5)
+#define BME280_OST_X4      (0x03 << 5)
+#define BME280_OST_X8      (0x04 << 5)
+#define BME280_OST_X16     (0x05 << 5)
 
 /* Oversampling for pressure. */
 
-#define BMP280_OSP_SKIPPED (0x00 << 2)
-#define BMP280_OSP_X1      (0x01 << 2)
-#define BMP280_OSP_X2      (0x02 << 2)
-#define BMP280_OSP_X4      (0x03 << 2)
-#define BMP280_OSP_X8      (0x04 << 2)
-#define BMP280_OSP_X16     (0x05 << 2)
+#define BME280_OSP_SKIPPED (0x00 << 2)
+#define BME280_OSP_X1      (0x01 << 2)
+#define BME280_OSP_X2      (0x02 << 2)
+#define BME280_OSP_X4      (0x03 << 2)
+#define BME280_OSP_X8      (0x04 << 2)
+#define BME280_OSP_X16     (0x05 << 2)
 
 /* Predefined oversampling combinations. */
 
-#define BMP280_OS_ULTRA_HIGH_RES  (BMP280_OSP_X16 | BMP280_OST_X2)
-#define BMP280_OS_STANDARD_RES    (BMP280_OSP_X4  | BMP280_OST_X1)
-#define BMP280_OS_ULTRA_LOW_POWER (BMP280_OSP_X1  | BMP280_OST_X1)
+#define BME280_OS_ULTRA_HIGH_RES  (BME280_OSP_X16 | BME280_OST_X2)
+#define BME280_OS_STANDARD_RES    (BME280_OSP_X4  | BME280_OST_X1)
+#define BME280_OS_ULTRA_LOW_POWER (BME280_OSP_X1  | BME280_OST_X1)
 
 /* Data combined from bytes to int */
 
@@ -131,15 +131,15 @@
  * Private Type Definitions
  ****************************************************************************/
 
-struct bmp280_dev_s
+struct bme280_dev_s
 {
   FAR struct sensor_lowerhalf_s sensor_lower;
   FAR struct i2c_master_s *i2c; /* I2C interface */
-  uint8_t addr;                 /* BMP280 I2C address */
-  int freq;                     /* BMP280 Frequency <= 3.4MHz */
+  uint8_t addr;                 /* BME280 I2C address */
+  int freq;                     /* BME280 Frequency <= 3.4MHz */
   bool activated;
 
-  struct bmp280_calib_s
+  struct bme280_calib_s
   {
     uint16_t t1;
     int16_t  t2;
@@ -162,18 +162,18 @@ struct bmp280_dev_s
  * Private Function Prototypes
  ****************************************************************************/
 
-static uint8_t bmp280_getreg8(FAR struct bmp280_dev_s *priv,
+static uint8_t bme280_getreg8(FAR struct bme280_dev_s *priv,
                               uint8_t regaddr);
-static int bmp280_putreg8(FAR struct bmp280_dev_s *priv, uint8_t regaddr,
+static int bme280_putreg8(FAR struct bme280_dev_s *priv, uint8_t regaddr,
                           uint8_t regval);
 
 /* Sensor methods */
 
-static int bmp280_set_interval(FAR struct sensor_lowerhalf_s *lower,
+static int bme280_set_interval(FAR struct sensor_lowerhalf_s *lower,
                                FAR unsigned int *period_us);
-static int bmp280_activate(FAR struct sensor_lowerhalf_s *lower,
+static int bme280_activate(FAR struct sensor_lowerhalf_s *lower,
                            bool enable);
-static int bmp280_fetch(FAR struct sensor_lowerhalf_s *lower,
+static int bme280_fetch(FAR struct sensor_lowerhalf_s *lower,
                         FAR char *buffer, size_t buflen);
 
 /****************************************************************************
@@ -182,9 +182,9 @@ static int bmp280_fetch(FAR struct sensor_lowerhalf_s *lower,
 
 static const struct sensor_ops_s g_sensor_ops =
 {
-  .activate      = bmp280_activate,
-  .fetch         = bmp280_fetch,
-  .set_interval  = bmp280_set_interval,
+  .activate      = bme280_activate,
+  .fetch         = bme280_fetch,
+  .set_interval  = bme280_set_interval,
 };
 
 /****************************************************************************
@@ -192,14 +192,14 @@ static const struct sensor_ops_s g_sensor_ops =
  ****************************************************************************/
 
 /****************************************************************************
- * Name: bmp280_getreg8
+ * Name: bme280_getreg8
  *
  * Description:
- *   Read from an 8-bit BMP280 register
+ *   Read from an 8-bit BME280 register
  *
  ****************************************************************************/
 
-static uint8_t bmp280_getreg8(FAR struct bmp280_dev_s *priv, uint8_t regaddr)
+static uint8_t bme280_getreg8(FAR struct bme280_dev_s *priv, uint8_t regaddr)
 {
   sninfo("regaddr=0x%02x\n", regaddr); ////
   struct i2c_msg_s msg[2];
@@ -236,14 +236,14 @@ static uint8_t bmp280_getreg8(FAR struct bmp280_dev_s *priv, uint8_t regaddr)
 }
 
 /****************************************************************************
- * Name: bmp280_getregs
+ * Name: bme280_getregs
  *
  * Description:
- *   Read two 8-bit from a BMP280 register
+ *   Read two 8-bit from a BME280 register
  *
  ****************************************************************************/
 
-static int bmp280_getregs(FAR struct bmp280_dev_s *priv, uint8_t regaddr,
+static int bme280_getregs(FAR struct bme280_dev_s *priv, uint8_t regaddr,
                           uint8_t *rxbuffer, uint8_t length)
 {
   sninfo("regaddr=0x%02x, length=%d\n", regaddr, length); ////
@@ -279,14 +279,14 @@ static int bmp280_getregs(FAR struct bmp280_dev_s *priv, uint8_t regaddr,
 }
 
 /****************************************************************************
- * Name: bmp280_putreg8
+ * Name: bme280_putreg8
  *
  * Description:
- *   Write to an 8-bit BMP280 register
+ *   Write to an 8-bit BME280 register
  *
  ****************************************************************************/
 
-static int bmp280_putreg8(FAR struct bmp280_dev_s *priv, uint8_t regaddr,
+static int bme280_putreg8(FAR struct bme280_dev_s *priv, uint8_t regaddr,
                           uint8_t regval)
 {
   sninfo("regaddr=0x%02x, regval=0x%02x\n", regaddr, regval); ////
@@ -313,20 +313,20 @@ static int bmp280_putreg8(FAR struct bmp280_dev_s *priv, uint8_t regaddr,
 }
 
 /****************************************************************************
- * Name: bmp280_checkid
+ * Name: bme280_checkid
  *
  * Description:
- *   Read and verify the BMP280 chip ID
+ *   Read and verify the BME280 chip ID
  *
  ****************************************************************************/
 
-static int bmp280_checkid(FAR struct bmp280_dev_s *priv)
+static int bme280_checkid(FAR struct bme280_dev_s *priv)
 {
   uint8_t devid = 0;
 
   /* Read device ID */
 
-  devid = bmp280_getreg8(priv, BMP280_DEVID);
+  devid = bme280_getreg8(priv, BME280_DEVID);
   up_mdelay(1);
   sninfo("devid: 0x%02x\n", devid);
 
@@ -342,27 +342,27 @@ static int bmp280_checkid(FAR struct bmp280_dev_s *priv)
 }
 
 /****************************************************************************
- * Name: bmp280_set_standby
+ * Name: bme280_set_standby
  *
  * Description:
  *   set standby duration
  *
  ****************************************************************************/
 
-static int bmp280_set_standby(FAR struct bmp280_dev_s *priv, uint8_t value)
+static int bme280_set_standby(FAR struct bme280_dev_s *priv, uint8_t value)
 {
   uint8_t v_data_u8;
   uint8_t v_sb_u8;
 
   /* Set the standby duration value */
 
-  v_data_u8 = bmp280_getreg8(priv, BMP280_CONFIG);
+  v_data_u8 = bme280_getreg8(priv, BME280_CONFIG);
   v_data_u8 = (v_data_u8 & ~(0x07 << 5)) | (value << 5);
-  bmp280_putreg8(priv, BMP280_CONFIG, v_data_u8);
+  bme280_putreg8(priv, BME280_CONFIG, v_data_u8);
 
   /* Check the standby duration value */
 
-  v_data_u8 = bmp280_getreg8(priv, BMP280_CONFIG);
+  v_data_u8 = bme280_getreg8(priv, BME280_CONFIG);
   v_sb_u8 = (v_data_u8 >> 5) & 0x07;
 
   if (v_sb_u8 != value)
@@ -375,21 +375,21 @@ static int bmp280_set_standby(FAR struct bmp280_dev_s *priv, uint8_t value)
 }
 
 /****************************************************************************
- * Name: bmp280_initialize
+ * Name: bme280_initialize
  *
  * Description:
- *   Initialize BMP280 device
+ *   Initialize BME280 device
  *
  ****************************************************************************/
 
-static int bmp280_initialize(FAR struct bmp280_dev_s *priv)
+static int bme280_initialize(FAR struct bme280_dev_s *priv)
 {
   uint8_t buf[24];
   int ret;
 
   /* Get calibration data. */
 
-  ret = bmp280_getregs(priv, BMP280_DIG_T1_LSB, buf, 24);
+  ret = bme280_getregs(priv, BME280_DIG_T1_LSB, buf, 24);
   if (ret < 0)
     {
       return ret;
@@ -425,11 +425,11 @@ static int bmp280_initialize(FAR struct bmp280_dev_s *priv)
 
   /* Set power mode to sleep */
 
-  bmp280_putreg8(priv, BMP280_CTRL_MEAS, BMP280_SLEEP_MODE);
+  bme280_putreg8(priv, BME280_CTRL_MEAS, BME280_SLEEP_MODE);
 
   /* Set stand-by time to 0.5 ms, no IIR filter */
 
-  ret = bmp280_set_standby(priv, BMP280_STANDBY_05_MS);
+  ret = bme280_set_standby(priv, BME280_STANDBY_05_MS);
   if (ret != OK)
     {
       snerr("Failed to set value for standby time.\n");
@@ -440,7 +440,7 @@ static int bmp280_initialize(FAR struct bmp280_dev_s *priv)
 }
 
 /****************************************************************************
- * Name: bmp280_compensate
+ * Name: bme280_compensate
  *
  * Description:
  *   calculate compensate tempreture
@@ -453,10 +453,10 @@ static int bmp280_initialize(FAR struct bmp280_dev_s *priv)
  *
  ****************************************************************************/
 
-static int32_t bmp280_compensate_temp(FAR struct bmp280_dev_s *priv,
+static int32_t bme280_compensate_temp(FAR struct bme280_dev_s *priv,
                                    int32_t temp)
 {
-  struct bmp280_calib_s *c = &priv->calib;
+  struct bme280_calib_s *c = &priv->calib;
   int32_t var1;
   int32_t var2;
 
@@ -471,7 +471,7 @@ static int32_t bmp280_compensate_temp(FAR struct bmp280_dev_s *priv,
 }
 
 /****************************************************************************
- * Name: bmp280_compensate_press
+ * Name: bme280_compensate_press
  *
  * Description:
  *   calculate compensate pressure
@@ -484,10 +484,10 @@ static int32_t bmp280_compensate_temp(FAR struct bmp280_dev_s *priv,
  *
  ****************************************************************************/
 
-static uint32_t bmp280_compensate_press(FAR struct bmp280_dev_s *priv,
+static uint32_t bme280_compensate_press(FAR struct bme280_dev_s *priv,
                                         uint32_t press)
 {
-  struct bmp280_calib_s *c = &priv->calib;
+  struct bme280_calib_s *c = &priv->calib;
   int32_t var1;
   int32_t var2;
   uint32_t p;
@@ -526,14 +526,14 @@ static uint32_t bmp280_compensate_press(FAR struct bmp280_dev_s *priv,
 }
 
 /****************************************************************************
- * Name: bmp280_set_interval
+ * Name: bme280_set_interval
  ****************************************************************************/
 
-static int bmp280_set_interval(FAR struct sensor_lowerhalf_s *lower,
+static int bme280_set_interval(FAR struct sensor_lowerhalf_s *lower,
                                FAR unsigned int *period_us)
 {
-  FAR struct bmp280_dev_s *priv = container_of(lower,
-                                               FAR struct bmp280_dev_s,
+  FAR struct bme280_dev_s *priv = container_of(lower,
+                                               FAR struct bme280_dev_s,
                                                sensor_lower);
   int ret = 0;
 
@@ -542,28 +542,28 @@ static int bmp280_set_interval(FAR struct sensor_lowerhalf_s *lower,
   switch (*period_us)
     {
       case 500:
-        regval = BMP280_STANDBY_05_MS;
+        regval = BME280_STANDBY_05_MS;
         break;
       case 62500:
-        regval = BMP280_STANDBY_63_MS;
+        regval = BME280_STANDBY_63_MS;
         break;
       case 125000:
-        regval = BMP280_STANDBY_125_MS;
+        regval = BME280_STANDBY_125_MS;
         break;
       case 250000:
-        regval = BMP280_STANDBY_250_MS;
+        regval = BME280_STANDBY_250_MS;
         break;
       case 500000:
-        regval = BMP280_STANDBY_500_MS;
+        regval = BME280_STANDBY_500_MS;
         break;
       case 1000000:
-        regval = BMP280_STANDBY_1000_MS;
+        regval = BME280_STANDBY_1000_MS;
         break;
       case 2000000:
-        regval = BMP280_STANDBY_2000_MS;
+        regval = BME280_STANDBY_2000_MS;
         break;
       case 4000000:
-        regval = BMP280_STANDBY_4000_MS;
+        regval = BME280_STANDBY_4000_MS;
         break;
       default:
         ret = -EINVAL;
@@ -572,21 +572,21 @@ static int bmp280_set_interval(FAR struct sensor_lowerhalf_s *lower,
 
   if (ret == 0)
     {
-      ret = bmp280_set_standby(priv, regval);
+      ret = bme280_set_standby(priv, regval);
     }
 
   return ret;
 }
 
 /****************************************************************************
- * Name: bmp280_activate
+ * Name: bme280_activate
  ****************************************************************************/
 
-static int bmp280_activate(FAR struct sensor_lowerhalf_s *lower,
+static int bme280_activate(FAR struct sensor_lowerhalf_s *lower,
                            bool enable)
 {
-  FAR struct bmp280_dev_s *priv = container_of(lower,
-                                               FAR struct bmp280_dev_s,
+  FAR struct bme280_dev_s *priv = container_of(lower,
+                                               FAR struct bme280_dev_s,
                                                sensor_lower);
   int ret;
 
@@ -594,14 +594,14 @@ static int bmp280_activate(FAR struct sensor_lowerhalf_s *lower,
     {
       /* Set power mode to normal and standard sampling resolution. */
 
-      ret = bmp280_putreg8(priv, BMP280_CTRL_MEAS, BMP280_NORMAL_MODE |
-                                 BMP280_OS_STANDARD_RES);
+      ret = bme280_putreg8(priv, BME280_CTRL_MEAS, BME280_NORMAL_MODE |
+                                 BME280_OS_STANDARD_RES);
     }
   else
     {
       /* Set to sleep mode */
 
-      ret = bmp280_putreg8(priv, BMP280_CTRL_MEAS, BMP280_SLEEP_MODE);
+      ret = bme280_putreg8(priv, BME280_CTRL_MEAS, BME280_SLEEP_MODE);
     }
 
   if (ret >= 0)
@@ -613,14 +613,14 @@ static int bmp280_activate(FAR struct sensor_lowerhalf_s *lower,
 }
 
 /****************************************************************************
- * Name: bmp280_fetch
+ * Name: bme280_fetch
  ****************************************************************************/
 
-static int bmp280_fetch(FAR struct sensor_lowerhalf_s *lower,
+static int bme280_fetch(FAR struct sensor_lowerhalf_s *lower,
                         FAR char *buffer, size_t buflen)
 {
-  FAR struct bmp280_dev_s *priv = container_of(lower,
-                                               FAR struct bmp280_dev_s,
+  FAR struct bme280_dev_s *priv = container_of(lower,
+                                               FAR struct bme280_dev_s,
                                                sensor_lower);
 
   uint8_t buf[6];
@@ -639,8 +639,8 @@ static int bmp280_fetch(FAR struct sensor_lowerhalf_s *lower,
     {
       /* Sensor is asleep, go to force mode to read once */
 
-      ret = bmp280_putreg8(priv, BMP280_CTRL_MEAS, BMP280_FORCED_MODE |
-                                 BMP280_OS_ULTRA_LOW_POWER);
+      ret = bme280_putreg8(priv, BME280_CTRL_MEAS, BME280_FORCED_MODE |
+                                 BME280_OS_ULTRA_LOW_POWER);
 
       if (ret < 0)
         {
@@ -654,7 +654,7 @@ static int bmp280_fetch(FAR struct sensor_lowerhalf_s *lower,
 
   /* Read pressure & data */
 
-  ret = bmp280_getregs(priv, BMP280_PRESS_MSB, buf, 6);
+  ret = bme280_getregs(priv, BME280_PRESS_MSB, buf, 6);
 
   if (ret < 0)
     {
@@ -666,8 +666,8 @@ static int bmp280_fetch(FAR struct sensor_lowerhalf_s *lower,
 
   sninfo("press = %"PRIu32", temp = %"PRIi32"\n", press, temp);
 
-  temp = bmp280_compensate_temp(priv, temp);
-  press = bmp280_compensate_press(priv, press);
+  temp = bme280_compensate_temp(priv, temp);
+  press = bme280_compensate_press(priv, press);
 
 #ifdef CONFIG_CLOCK_MONOTONIC
   clock_gettime(CLOCK_MONOTONIC, &ts);
@@ -689,29 +689,29 @@ static int bmp280_fetch(FAR struct sensor_lowerhalf_s *lower,
  ****************************************************************************/
 
 /****************************************************************************
- * Name: bmp280_register
+ * Name: bme280_register
  *
  * Description:
- *   Register the BMP280 character device
+ *   Register the BME280 character device
  *
  * Input Parameters:
  *   devno   - Instance number for driver
  *   i2c     - An instance of the I2C interface to use to communicate with
- *             BMP280
+ *             BME280
  *
  * Returned Value:
  *   Zero (OK) on success; a negated errno value on failure.
  *
  ****************************************************************************/
 
-int bmp280_register(int devno, FAR struct i2c_master_s *i2c)
+int bme280_register(int devno, FAR struct i2c_master_s *i2c)
 {
-  FAR struct bmp280_dev_s *priv;
+  FAR struct bme280_dev_s *priv;
   int ret;
 
-  /* Initialize the BMP280 device structure */
+  /* Initialize the BME280 device structure */
 
-  priv = (FAR struct bmp280_dev_s *)kmm_zalloc(sizeof(struct bmp280_dev_s));
+  priv = (FAR struct bme280_dev_s *)kmm_zalloc(sizeof(struct bme280_dev_s));
   if (!priv)
     {
       snerr("Failed to allocate instance\n");
@@ -719,15 +719,15 @@ int bmp280_register(int devno, FAR struct i2c_master_s *i2c)
     }
 
   priv->i2c = i2c;
-  priv->addr = BMP280_ADDR;
-  priv->freq = BMP280_FREQ;
+  priv->addr = BME280_ADDR;
+  priv->freq = BME280_FREQ;
 
   priv->sensor_lower.ops = &g_sensor_ops;
   priv->sensor_lower.type = SENSOR_TYPE_BAROMETER;
 
   /* Check Device ID */
 
-  ret = bmp280_checkid(priv);
+  ret = bme280_checkid(priv);
 
   if (ret < 0)
     {
@@ -736,11 +736,11 @@ int bmp280_register(int devno, FAR struct i2c_master_s *i2c)
       return ret;
     }
 
-  ret = bmp280_initialize(priv);
+  ret = bme280_initialize(priv);
 
   if (ret < 0)
     {
-      snerr("Failed to initialize physical device bmp280:%d\n", ret);
+      snerr("Failed to initialize physical device bme280:%d\n", ret);
       kmm_free(priv);
       return ret;
     }
@@ -755,7 +755,7 @@ int bmp280_register(int devno, FAR struct i2c_master_s *i2c)
       kmm_free(priv);
     }
 
-  sninfo("BMP280 driver loaded successfully!\n");
+  sninfo("BME280 driver loaded successfully!\n");
   return ret;
 }
 
