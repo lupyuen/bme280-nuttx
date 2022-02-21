@@ -520,6 +520,7 @@ static int bme280_fetch(FAR struct sensor_lowerhalf_s *lower,
       return -EINVAL;
     }
 
+#ifdef TODO
   if (!priv->activated)
     {
       /* Sensor is asleep, go to force mode to read once */
@@ -563,6 +564,7 @@ static int bme280_fetch(FAR struct sensor_lowerhalf_s *lower,
   baro_data.timestamp = 1000000ull * ts.tv_sec + ts.tv_nsec / 1000;
   baro_data.pressure = press / 100.0f;
   baro_data.temperature = temp / 100.0f;
+#endif  //  TODO
 
   memcpy(buffer, &baro_data, sizeof(baro_data));
 
