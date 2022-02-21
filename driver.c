@@ -156,6 +156,35 @@ static const struct sensor_ops_s g_sensor_ops =
  ****************************************************************************/
 
 /****************************************************************************
+ * Name: get_sensor_value
+ *
+ * Description:
+ *   Return the sensor value as a float.
+ *
+ ****************************************************************************/
+
+static float get_sensor_value(const struct sensor_value *val)
+{
+  DEBUGASSERT(val != NULL);
+  return 
+    (float)(val->val1) +
+    (float)(val->val2) / 1000000.0f;
+}
+
+/****************************************************************************
+ * Name: bme280_bus_check
+ *
+ * Description:
+ *   Check I2C Bus
+ *
+ ****************************************************************************/
+
+static int bme280_bus_check(const struct device *dev)
+{
+  return 0;
+}
+
+/****************************************************************************
  * Name: bme280_reg_read
  *
  * Description:
@@ -275,6 +304,7 @@ static int bme280_set_standby(FAR struct device *priv, uint8_t value)
 static int bme280_set_interval(FAR struct sensor_lowerhalf_s *lower,
                                FAR unsigned int *period_us)
 {
+  sninfo("TODO period_us=%u\n", period_us); ////
   FAR struct device *priv = container_of(lower,
                                                FAR struct device,
                                                sensor_lower);
@@ -329,12 +359,12 @@ static int bme280_activate(FAR struct sensor_lowerhalf_s *lower,
                            bool enable)
 {
   sninfo("TODO enable=%d\n", enable); ////
-  FAR struct device *priv = container_of(lower,
-                                               FAR struct device,
-                                               sensor_lower);
   int ret = 0;
 
 #ifdef TODO
+  FAR struct device *priv = container_of(lower,
+                                               FAR struct device,
+                                               sensor_lower);
   if (enable)
     {
       /* Set power mode to normal and standard sampling resolution. */
@@ -369,65 +399,64 @@ static int bme280_fetch(FAR struct sensor_lowerhalf_s *lower,
                                                FAR struct device,
                                                sensor_lower);
 
-  uint8_t buf[6];
-  uint32_t press;
-  int32_t temp;
   int ret;
   struct timespec ts;
   struct sensor_event_baro baro_data;
+  struct sensor_value val;
 
   if (buflen != sizeof(baro_data))
     {
       return -EINVAL;
     }
 
-#ifdef TODO
-  if (!priv->activated)
-    {
-      /* Sensor is asleep, go to force mode to read once */
+  /* Fetch the sensor data */
 
-      ret = bme280_putreg8(priv, BME280_CTRL_MEAS, BME280_FORCED_MODE |
-                                 BME280_OS_ULTRA_LOW_POWER);
-
-      if (ret < 0)
-        {
-          return ret;
-        }
-
-      /* Wait time according to ultra low power mode set during sleep */
-
-      up_mdelay(6);
-    }
-
-  /* Read pressure & data */
-
-  ret = bme280_getregs(priv, BME280_PRESS_MSB, buf, 6);
-
+  ret = bme280_sample_fetch(priv, SENSOR_CHAN_ALL);
   if (ret < 0)
     {
       return ret;
     }
 
-  press = (uint32_t)COMBINE(buf);
-  temp = COMBINE(&buf[3]);
+  /* Get the temperature */
 
-  sninfo("press = %"PRIu32", temp = %"PRIi32"\n", press, temp);
+  ret = bme280_channel_get(priv, SENSOR_CHAN_AMBIENT_TEMP, &val);
+  if (ret < 0)
+    {
+      return ret;
+    }
+  baro_data.temperature = get_sensor_value(&val);
 
-  temp = bme280_compensate_temp(priv, temp);
-  press = bme280_compensate_press(priv, press);
+  /* Get the pressure */
 
+  ret = bme280_channel_get(priv, SENSOR_CHAN_PRESS, &val);
+  if (ret < 0)
+    {
+      return ret;
+    }
+  baro_data.pressure = get_sensor_value(&val);
+
+  /* Get the humidity */
+
+  ret = bme280_channel_get(priv, SENSOR_CHAN_HUMIDITY, &val);
+  if (ret < 0)
+    {
+      return ret;
+    }
+  float humidity = get_sensor_value(&val);
+
+  /* Get the timestamp */
+  
 #ifdef CONFIG_CLOCK_MONOTONIC
   clock_gettime(CLOCK_MONOTONIC, &ts);
 #else
   clock_gettime(CLOCK_REALTIME, &ts);
 #endif
-
   baro_data.timestamp = 1000000ull * ts.tv_sec + ts.tv_nsec / 1000;
-  baro_data.pressure = press / 100.0f;
-  baro_data.temperature = temp / 100.0f;
-#endif  //  TODO
+
+  /* Return the sensor data */
 
   memcpy(buffer, &baro_data, sizeof(baro_data));
+  sninfo("temperature=%f °C, pressure=%f mbar, humidity=%f %%\n", baro_data.temperature, baro_data.pressure, humidity); ////
 
   return buflen;
 }

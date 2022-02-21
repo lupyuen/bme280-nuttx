@@ -2,10 +2,12 @@
 //  so we don't need to fix the NuttX build system.
 #include <nuttx/config.h>
 #include <nuttx/nuttx.h>
+#include <unistd.h>
 #include <stdlib.h>
 #include <fixedmath.h>
 #include <errno.h>
 #include <debug.h>
+#include <assert.h>
 
 //  Zephyr BME280 Options from
 //  https://github.com/zephyrproject-rtos/zephyr/blob/main/drivers/sensor/bme280/Kconfig
@@ -16,11 +18,13 @@
 #define CONFIG_BME280_STANDBY_1000MS     //  Standby Time 1000ms
 #define CONFIG_BME280_FILTER_4           //  Filter Coefficient 4
 
-//  Other Defines
+//  Other Zephyr Defines
 #define BME280_BUS_I2C  0  //  I2C Bus
 #define BME280_BUS_SPI  0  //  SPI Bus
-#define __ASSERT_NO_MSG assert  //  Assertion check
-#define LOG_DBG         sninfo  //  Log info message
+#define __ASSERT_NO_MSG DEBUGASSERT  //  Assertion check
+#define LOG_DBG         sninfo       //  Log info message
+#define K_MSEC(ms)      ms * 1000    //  Convert milliseconds to microseconds
+#define k_sleep(us)     usleep(us)   //  Sleep for microseconds
 
 //  Zephyr Sensor Channel to be fetched from the sensor
 enum sensor_channel {
@@ -52,5 +56,5 @@ static int bme280_reg_write(const struct device *dev, uint8_t reg,
 //  Embed Zephyr BME280 Driver
 #include "bme280/bme280.c"
 
-//  Embed NuttX Driver Shell
+//  Embed NuttX Driver Wrapper
 #include "bme280/driver.c"

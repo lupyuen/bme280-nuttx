@@ -3,7 +3,7 @@
 #ifndef __INCLUDE_NUTTX_SENSORS_BME280_BUNDLE_H
 #define __INCLUDE_NUTTX_SENSORS_BME280_BUNDLE_H
 
-//  Embed NuttX Driver Shell
+//  Embed NuttX Driver Wrapper
 #include "../drivers/sensors/bme280/driver.h"
 
 #endif /* __INCLUDE_NUTTX_SENSORS_BME280_BUNDLE_H */
