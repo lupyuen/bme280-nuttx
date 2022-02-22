@@ -265,26 +265,40 @@ static int bme280_reg_write(const struct device *priv, uint8_t reg,
  * Name: bme280_set_standby
  *
  * Description:
- *   set standby duration
+ *   Set Standby Duration. Zephyr assumes that Standby Duration is static,
+ *   so we set it in NuttX.
  *
  ****************************************************************************/
 
 static int bme280_set_standby(FAR struct device *priv, uint8_t value)
 {
-  sninfo("TODO value=%d\n", value); ////
-#ifdef TODO
+  sninfo("value=%d\n", value); ////
+  
   uint8_t v_data_u8;
   uint8_t v_sb_u8;
+  int ret;
 
   /* Set the standby duration value */
 
-  v_data_u8 = bme280_getreg8(priv, BME280_CONFIG);
+	ret = bme280_reg_read(priv, BME280_REG_CONFIG, &v_data_u8, 1);
+  if (ret < 0)
+    {
+      return ret;
+    }
   v_data_u8 = (v_data_u8 & ~(0x07 << 5)) | (value << 5);
-  bme280_putreg8(priv, BME280_CONFIG, v_data_u8);
+	ret = bme280_reg_write(priv, BME280_REG_CONFIG, v_data_u8);
+  if (ret < 0)
+    {
+      return ret;
+    }
 
   /* Check the standby duration value */
 
-  v_data_u8 = bme280_getreg8(priv, BME280_CONFIG);
+	ret = bme280_reg_read(priv, BME280_REG_CONFIG, &v_data_u8, 1);
+  if (ret < 0)
+    {
+      return ret;
+    }
   v_sb_u8 = (v_data_u8 >> 5) & 0x07;
 
   if (v_sb_u8 != value)
@@ -292,7 +306,6 @@ static int bme280_set_standby(FAR struct device *priv, uint8_t value)
       snerr("Failed to set value for standby time.");
       return ERROR;
     }
-#endif  //  TODO
 
   return OK;
 }
@@ -304,7 +317,7 @@ static int bme280_set_standby(FAR struct device *priv, uint8_t value)
 static int bme280_set_interval(FAR struct sensor_lowerhalf_s *lower,
                                FAR unsigned int *period_us)
 {
-  sninfo("TODO period_us=%u\n", period_us); ////
+  sninfo("period_us=%u\n", period_us); ////
   FAR struct device *priv = container_of(lower,
                                                FAR struct device,
                                                sensor_lower);
