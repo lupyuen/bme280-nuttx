@@ -811,7 +811,62 @@ static int bme280_fetch(FAR struct sensor_lowerhalf_s *lower,
 }
 ```
 
-TODO
+# Read Sensor Data from Zephyr Driver
+
+Our NuttX BME280 Driver reads the Sensor Data from Zephyr Driver in two steps: 1️⃣ Fetch the sensor sample 2️⃣ Get the channel data
+
+https://github.com/lupyuen/bme280-nuttx/blob/main/driver.c#L374-L421
+
+```c
+  /* Fetch the sensor data (from Zephyr BME280 Driver) */
+
+  ret = bme280_sample_fetch(priv, SENSOR_CHAN_ALL);
+  if (ret < 0)
+    {
+      return ret;
+    }
+
+  /* Get the temperature (from Zephyr BME280 Driver) */
+
+  ret = bme280_channel_get(priv, SENSOR_CHAN_AMBIENT_TEMP, &val);
+  if (ret < 0)
+    {
+      return ret;
+    }
+  baro_data.temperature = get_sensor_value(&val);
+
+  /* Get the pressure (from Zephyr BME280 Driver) */
+
+  ret = bme280_channel_get(priv, SENSOR_CHAN_PRESS, &val);
+  if (ret < 0)
+    {
+      return ret;
+    }
+  baro_data.pressure = get_sensor_value(&val) * 10;
+
+  /* Get the humidity (from Zephyr BME280 Driver) */
+
+  ret = bme280_channel_get(priv, SENSOR_CHAN_HUMIDITY, &val);
+  if (ret < 0)
+    {
+      return ret;
+    }
+  float humidity = get_sensor_value(&val);
+
+  /* Get the timestamp */
+  
+#ifdef CONFIG_CLOCK_MONOTONIC
+  clock_gettime(CLOCK_MONOTONIC, &ts);
+#else
+  clock_gettime(CLOCK_REALTIME, &ts);
+#endif
+  baro_data.timestamp = 1000000ull * ts.tv_sec + ts.tv_nsec / 1000;
+
+  /* Return the sensor data */
+
+  memcpy(buffer, &baro_data, sizeof(baro_data));
+  sninfo("temperature=%f °C, pressure=%f mbar, humidity=%f %%\n", baro_data.temperature, baro_data.pressure, humidity);
+```
 
 # Output Log
 
