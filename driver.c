@@ -395,7 +395,7 @@ static int bme280_fetch(FAR struct sensor_lowerhalf_s *lower,
     {
       return ret;
     }
-  baro_data.pressure = get_sensor_value(&val);
+  baro_data.pressure = get_sensor_value(&val) * 10;
 
   /* Get the humidity (from Zephyr BME280 Driver) */
 
