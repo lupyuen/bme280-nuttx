@@ -868,6 +868,92 @@ https://github.com/lupyuen/bme280-nuttx/blob/main/driver.c#L374-L421
   sninfo("temperature=%f °C, pressure=%f mbar, humidity=%f %%\n", baro_data.temperature, baro_data.pressure, humidity);
 ```
 
+# Power Management
+
+Power Management works a little differently in NuttX vs Zephyr ... Here's how our NuttX BME280 Driver calls the Zephyr Driver to do Power Management
+
+https://github.com/lupyuen/bme280-nuttx/blob/main/driver.c#L315-L343
+
+```c
+static int bme280_activate(FAR struct sensor_lowerhalf_s *lower,
+                           bool enable)
+{
+  sninfo("enable=%d\n", enable);
+  int ret = 0;
+
+  FAR struct device *priv = container_of(lower,
+                                               FAR struct device,
+                                               sensor_lower);
+  if (enable)
+    {
+      /* Set power mode to normal */
+
+      ret = bme280_pm_action(priv, PM_DEVICE_ACTION_RESUME);
+    }
+  else
+    {
+      /* Set to sleep mode */
+
+      ret = bme280_pm_action(priv, PM_DEVICE_ACTION_SUSPEND);
+    }
+
+  if (ret >= 0)
+    {
+      priv->activated = enable;
+    }
+
+  return ret;
+}
+```
+
+# Standby Duration
+
+BME280 Standby Duration is static in Zephyr but configured at runtime in NuttX ... So we set it in our NuttX BME280 Driver
+
+https://github.com/lupyuen/bme280-nuttx/blob/main/driver.c#L217-L255
+
+```c
+static int bme280_set_standby(FAR struct device *priv, uint8_t value)
+{
+  sninfo("value=%d\n", value);
+  
+  uint8_t v_data_u8;
+  uint8_t v_sb_u8;
+  int ret;
+
+  /* Set the standby duration value */
+
+	ret = bme280_reg_read(priv, BME280_REG_CONFIG, &v_data_u8, 1);
+  if (ret < 0)
+    {
+      return ret;
+    }
+  v_data_u8 = (v_data_u8 & ~(0x07 << 5)) | (value << 5);
+	ret = bme280_reg_write(priv, BME280_REG_CONFIG, v_data_u8);
+  if (ret < 0)
+    {
+      return ret;
+    }
+
+  /* Check the standby duration value */
+
+	ret = bme280_reg_read(priv, BME280_REG_CONFIG, &v_data_u8, 1);
+  if (ret < 0)
+    {
+      return ret;
+    }
+  v_sb_u8 = (v_data_u8 >> 5) & 0x07;
+
+  if (v_sb_u8 != value)
+    {
+      snerr("Failed to set value for standby time.");
+      return ERROR;
+    }
+
+  return OK;
+}
+```
+
 # Output Log
 
 Output Log:
