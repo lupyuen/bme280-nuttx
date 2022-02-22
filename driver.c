@@ -409,7 +409,7 @@ static int bme280_fetch(FAR struct sensor_lowerhalf_s *lower,
       return -EINVAL;
     }
 
-  /* Fetch the sensor data */
+  /* Fetch the sensor data (from Zephyr BME280 Driver) */
 
   ret = bme280_sample_fetch(priv, SENSOR_CHAN_ALL);
   if (ret < 0)
@@ -417,7 +417,7 @@ static int bme280_fetch(FAR struct sensor_lowerhalf_s *lower,
       return ret;
     }
 
-  /* Get the temperature */
+  /* Get the temperature (from Zephyr BME280 Driver) */
 
   ret = bme280_channel_get(priv, SENSOR_CHAN_AMBIENT_TEMP, &val);
   if (ret < 0)
@@ -426,7 +426,7 @@ static int bme280_fetch(FAR struct sensor_lowerhalf_s *lower,
     }
   baro_data.temperature = get_sensor_value(&val);
 
-  /* Get the pressure */
+  /* Get the pressure (from Zephyr BME280 Driver) */
 
   ret = bme280_channel_get(priv, SENSOR_CHAN_PRESS, &val);
   if (ret < 0)
@@ -435,7 +435,7 @@ static int bme280_fetch(FAR struct sensor_lowerhalf_s *lower,
     }
   baro_data.pressure = get_sensor_value(&val);
 
-  /* Get the humidity */
+  /* Get the humidity (from Zephyr BME280 Driver) */
 
   ret = bme280_channel_get(priv, SENSOR_CHAN_HUMIDITY, &val);
   if (ret < 0)
