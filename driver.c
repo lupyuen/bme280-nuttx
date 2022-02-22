@@ -349,6 +349,7 @@ static int bme280_activate(FAR struct sensor_lowerhalf_s *lower,
 static int bme280_fetch(FAR struct sensor_lowerhalf_s *lower,
                         FAR char *buffer, size_t buflen)
 {
+  sninfo("buflen=%d\n", buflen); ////
   FAR struct device *priv = container_of(lower,
                                                FAR struct device,
                                                sensor_lower);
@@ -361,6 +362,13 @@ static int bme280_fetch(FAR struct sensor_lowerhalf_s *lower,
   if (buflen != sizeof(baro_data))
     {
       return -EINVAL;
+    }
+
+  /* Zephyr BME280 Driver assumes that sensor is not in sleep mode */
+  if (!priv->activated)
+    {
+      snerr("Device in sleep mode\n");
+      return -EIO;
     }
 
   /* Fetch the sensor data (from Zephyr BME280 Driver) */
@@ -437,6 +445,7 @@ static int bme280_fetch(FAR struct sensor_lowerhalf_s *lower,
 
 int bme280_register(int devno, FAR struct i2c_master_s *i2c)
 {
+  sninfo("devno=%d\n", devno); ////
   FAR struct device *priv;
   int ret;
 
@@ -474,11 +483,23 @@ int bme280_register(int devno, FAR struct i2c_master_s *i2c)
   ret = bme280_chip_init(priv);
   if (ret < 0)
     {
-      snerr("Failed to register driver: %d\n", ret);
+      snerr("Failed to init: %d\n", ret);
       kmm_free(data);
       kmm_free(priv);
       return ret;
     }
+
+  /* Set power mode to sleep */
+
+  ret = bme280_pm_action(priv, PM_DEVICE_ACTION_SUSPEND);
+  if (ret < 0)
+    {
+      snerr("Failed to sleep: %d\n", ret);
+      kmm_free(data);
+      kmm_free(priv);
+      return ret;
+    }
+  priv->activated = false;
 
   /* Register the character driver */
 
