@@ -970,7 +970,7 @@ The above files are wrapped by [bundle.c](bundle.c) and [bundle.h](bundle.h) to 
 
 # Output Log
 
-Output Log:
+Zephyr BME280 Driver ported to Apache #NuttX OS ... Works great on NuttX! 🎉
 
 ```text
 spi_test_driver_register: devpath=/dev/spitest0, spidev=0
