@@ -224,13 +224,13 @@ static int bme280_set_standby(FAR struct device *priv, uint8_t value)
 
   /* Set the standby duration value */
 
-	ret = bme280_reg_read(priv, BME280_REG_CONFIG, &v_data_u8, 1);
+  ret = bme280_reg_read(priv, BME280_REG_CONFIG, &v_data_u8, 1);
   if (ret < 0)
     {
       return ret;
     }
   v_data_u8 = (v_data_u8 & ~(0x07 << 5)) | (value << 5);
-	ret = bme280_reg_write(priv, BME280_REG_CONFIG, v_data_u8);
+  ret = bme280_reg_write(priv, BME280_REG_CONFIG, v_data_u8);
   if (ret < 0)
     {
       return ret;
@@ -238,7 +238,7 @@ static int bme280_set_standby(FAR struct device *priv, uint8_t value)
 
   /* Check the standby duration value */
 
-	ret = bme280_reg_read(priv, BME280_REG_CONFIG, &v_data_u8, 1);
+  ret = bme280_reg_read(priv, BME280_REG_CONFIG, &v_data_u8, 1);
   if (ret < 0)
     {
       return ret;
