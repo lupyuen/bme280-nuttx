@@ -138,7 +138,7 @@ static int bme280_reg_read(const struct device *priv,
     uint8_t start, uint8_t *buf, int size)
 {
   DEBUGASSERT(priv != NULL);
-  sninfo("start=0x%02x, size=%d\n", start, size); ////
+  sninfo("start=0x%02x, size=%d\n", start, size);
   struct i2c_msg_s msg[2];
   int ret;
 
@@ -182,7 +182,7 @@ static int bme280_reg_write(const struct device *priv, uint8_t reg,
     uint8_t val)
 {
   DEBUGASSERT(priv != NULL);
-  sninfo("reg=0x%02x, val=0x%02x\n", reg, val); ////
+  sninfo("reg=0x%02x, val=0x%02x\n", reg, val);
   struct i2c_msg_s msg[2];
   uint8_t txbuffer[2];
   int ret;
@@ -216,7 +216,7 @@ static int bme280_reg_write(const struct device *priv, uint8_t reg,
 
 static int bme280_set_standby(FAR struct device *priv, uint8_t value)
 {
-  sninfo("value=%d\n", value); ////
+  sninfo("value=%d\n", value);
   
   uint8_t v_data_u8;
   uint8_t v_sb_u8;
@@ -261,7 +261,7 @@ static int bme280_set_standby(FAR struct device *priv, uint8_t value)
 static int bme280_set_interval(FAR struct sensor_lowerhalf_s *lower,
                                FAR unsigned int *period_us)
 {
-  sninfo("period_us=%u\n", period_us); ////
+  sninfo("period_us=%u\n", period_us);
   FAR struct device *priv = container_of(lower,
                                                FAR struct device,
                                                sensor_lower);
@@ -315,7 +315,7 @@ static int bme280_set_interval(FAR struct sensor_lowerhalf_s *lower,
 static int bme280_activate(FAR struct sensor_lowerhalf_s *lower,
                            bool enable)
 {
-  sninfo("enable=%d\n", enable); ////
+  sninfo("enable=%d\n", enable);
   int ret = 0;
 
   FAR struct device *priv = container_of(lower,
@@ -323,7 +323,7 @@ static int bme280_activate(FAR struct sensor_lowerhalf_s *lower,
                                                sensor_lower);
   if (enable)
     {
-      /* Set power mode to normal and standard sampling resolution. */
+      /* Set power mode to normal */
 
       ret = bme280_pm_action(priv, PM_DEVICE_ACTION_RESUME);
     }
@@ -349,7 +349,7 @@ static int bme280_activate(FAR struct sensor_lowerhalf_s *lower,
 static int bme280_fetch(FAR struct sensor_lowerhalf_s *lower,
                         FAR char *buffer, size_t buflen)
 {
-  sninfo("buflen=%d\n", buflen); ////
+  sninfo("buflen=%d\n", buflen);
   FAR struct device *priv = container_of(lower,
                                                FAR struct device,
                                                sensor_lower);
@@ -367,7 +367,7 @@ static int bme280_fetch(FAR struct sensor_lowerhalf_s *lower,
   /* Zephyr BME280 Driver assumes that sensor is not in sleep mode */
   if (!priv->activated)
     {
-      snerr("Device in sleep mode\n");
+      snerr("Device must be active before fetch\n");
       return -EIO;
     }
 
@@ -418,7 +418,7 @@ static int bme280_fetch(FAR struct sensor_lowerhalf_s *lower,
   /* Return the sensor data */
 
   memcpy(buffer, &baro_data, sizeof(baro_data));
-  sninfo("temperature=%f °C, pressure=%f mbar, humidity=%f %%\n", baro_data.temperature, baro_data.pressure, humidity); ////
+  sninfo("temperature=%f °C, pressure=%f mbar, humidity=%f %%\n", baro_data.temperature, baro_data.pressure, humidity);
 
   return buflen;
 }
@@ -445,7 +445,7 @@ static int bme280_fetch(FAR struct sensor_lowerhalf_s *lower,
 
 int bme280_register(int devno, FAR struct i2c_master_s *i2c)
 {
-  sninfo("devno=%d\n", devno); ////
+  sninfo("devno=%d\n", devno);
   FAR struct device *priv;
   int ret;
 

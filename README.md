@@ -730,12 +730,13 @@ https://github.com/lupyuen/bme280-nuttx/blob/main/bundle.c
 
 Our NuttX Driver Wrapper wraps around the Zephyr BME280 Driver ... So it works like a NuttX Driver
 
-https://github.com/lupyuen/bme280-nuttx/blob/main/driver.c#L395-L462
+https://github.com/lupyuen/bme280-nuttx/blob/main/driver.c#L349-L424
 
 ```c
 static int bme280_fetch(FAR struct sensor_lowerhalf_s *lower,
                         FAR char *buffer, size_t buflen)
 {
+  sninfo("buflen=%d\n", buflen);
   FAR struct device *priv = container_of(lower,
                                                FAR struct device,
                                                sensor_lower);
@@ -748,6 +749,13 @@ static int bme280_fetch(FAR struct sensor_lowerhalf_s *lower,
   if (buflen != sizeof(baro_data))
     {
       return -EINVAL;
+    }
+
+  /* Zephyr BME280 Driver assumes that sensor is not in sleep mode */
+  if (!priv->activated)
+    {
+      snerr("Device must be active before fetch\n");
+      return -EIO;
     }
 
   /* Fetch the sensor data (from Zephyr BME280 Driver) */
@@ -774,7 +782,7 @@ static int bme280_fetch(FAR struct sensor_lowerhalf_s *lower,
     {
       return ret;
     }
-  baro_data.pressure = get_sensor_value(&val);
+  baro_data.pressure = get_sensor_value(&val) * 10;
 
   /* Get the humidity (from Zephyr BME280 Driver) */
 
@@ -797,7 +805,7 @@ static int bme280_fetch(FAR struct sensor_lowerhalf_s *lower,
   /* Return the sensor data */
 
   memcpy(buffer, &baro_data, sizeof(baro_data));
-  sninfo("temperature=%f °C, pressure=%f mbar, humidity=%f %%\n", baro_data.temperature, baro_data.pressure, humidity); ////
+  sninfo("temperature=%f °C, pressure=%f mbar, humidity=%f %%\n", baro_data.temperature, baro_data.pressure, humidity);
 
   return buflen;
 }
@@ -807,7 +815,7 @@ TODO
 
 # Output Log
 
-Log:
+Output Log:
 
 ```text
 spi_test_driver_register: devpath=/dev/spitest0, spidev=0
