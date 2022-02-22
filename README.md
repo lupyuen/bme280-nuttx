@@ -954,6 +954,20 @@ static int bme280_set_standby(FAR struct device *priv, uint8_t value)
 }
 ```
 
+# Zephyr Driver Modified For NuttX
+
+Here are the minor modifications we made to the Zephyr BME280 Driver while porting to NuttX...
+
+bme280.c:
+
+https://github.com/lupyuen/bme280-nuttx/pull/1/files#diff-80464162211b7180f107757b7aee91398cdc088e5775ffadf7e6e1f0bbb4ad65
+
+bme280.h:
+
+https://github.com/lupyuen/bme280-nuttx/pull/1/files#diff-e13ff0ab44de7ead31a3dd6cbbbbf2a6fbfb2f04889300993b87ff5a31ffc233
+
+The above files are wrapped by [bundle.c](bundle.c) and [bundle.h](bundle.h) to become a NuttX Driver.
+
 # Output Log
 
 Output Log:
