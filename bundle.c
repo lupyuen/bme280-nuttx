@@ -35,6 +35,12 @@ enum sensor_channel {
     SENSOR_CHAN_HUMIDITY,      //  Humidity
 };
 
+//  Zephyr Power Management Action
+enum pm_device_action {
+    PM_DEVICE_ACTION_SUSPEND,  //  Suspend the sensor
+    PM_DEVICE_ACTION_RESUME,   //  Resume the sensor
+};
+
 //  Zephyr Sensor Value
 struct sensor_value {
     int32_t val1;  //  Integer part of the value

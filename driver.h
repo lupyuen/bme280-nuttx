@@ -61,13 +61,6 @@ extern "C"
 
 /* IOCTL Commands ***********************************************************/
 
-/* Arg: 0: Disable compensated
- *      1: Enable compensated
- */
-
-#define ENABLE_COMPENSATED (1)
-#define DISABLE_COMPENSATED (0)
-
 /* Standby duration */
 
 #define BME280_STANDBY_05_MS   (0x00) /* 0.5 ms */
@@ -78,62 +71,6 @@ extern "C"
 #define BME280_STANDBY_1000_MS (0x05) /* 1000 ms */
 #define BME280_STANDBY_2000_MS (0x06) /* 2000 ms */
 #define BME280_STANDBY_4000_MS (0x07) /* 4000 ms */
-
-/* Enable compensate of sensing values (no SCU bus only)
- *
- * Arg: ENABLE_COMPENSATED or DISABLE_COMPENSATED
- */
-
-#define SNIOC_ENABLE_COMPENSATED   _SNIOC(0x0001)
-
-/* Get sensor predefined adjustment values (SCU bus only)
- *
- * Arg: Pointer of struct bme280_press_adj_s (pressure)
- *      Pointer of struct bme280_temp_adj_s (temperature)
- */
-
-#define SNIOC_GETADJ               _SNIOC(0x0002)
-
-/* Set sensor standby duration
- *
- * Arg: BME280_STANDBY_*_MS
- */
-
-#define SNIOC_SETSTB               _SNIOC(0x0003)
-
-/* Get temperature value
- *
- * Arg: Pointer to uint32_t (raw value)
- */
-
-#define SNIOC_GET_TEMP             _SNIOC(0x0004)
-
-struct bme280_press_adj_s
-{
-  uint16_t  dig_p1; /* calibration P1 data */
-  int16_t   dig_p2; /* calibration P2 data */
-  int16_t   dig_p3; /* calibration P3 data */
-  int16_t   dig_p4; /* calibration P4 data */
-  int16_t   dig_p5; /* calibration P5 data */
-  int16_t   dig_p6; /* calibration P6 data */
-  int16_t   dig_p7; /* calibration P7 data */
-  int16_t   dig_p8; /* calibration P8 data */
-  int16_t   dig_p9; /* calibration P9 data */
-};
-
-struct bme280_temp_adj_s
-{
-  uint16_t  dig_t1; /* calibration T1 data */
-  int16_t   dig_t2; /* calibration T2 data */
-  int16_t   dig_t3; /* calibration T3 data */
-};
-
-struct bme280_meas_s
-{
-  uint8_t   msb;    /* meas value MSB */
-  uint8_t   lsb;    /* meas value LSB */
-  uint8_t   xlsb;   /* meas value XLSB */
-};
 
 #ifdef CONFIG_SENSORS_BME280_SCU
 /****************************************************************************

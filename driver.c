@@ -42,90 +42,8 @@
  * Pre-processor Definitions
  ****************************************************************************/
 
-////  Previously: I2C Address of BME280
-////  #define BME280_ADDR         0x76
-
-#warning Testing: I2C Address of BME280
-#define BME280_ADDR         0x77 //// BME280
-
+#define BME280_ADDR         0x77
 #define BME280_FREQ         CONFIG_BME280_I2C_FREQUENCY
-
-////  Previously: Device ID of BME280
-////  #define DEVID               0x58
-
-#warning Testing: Device ID of BME280
-#define DEVID               0x60 //// BME280
-
-#define BME280_DIG_T1_LSB   0x88
-#define BME280_DIG_T1_MSB   0x89
-#define BME280_DIG_T2_LSB   0x8a
-#define BME280_DIG_T2_MSB   0x8b
-#define BME280_DIG_T3_LSB   0x8c
-#define BME280_DIG_T3_MSB   0x8d
-#define BME280_DIG_P1_LSB   0x8e
-#define BME280_DIG_P1_MSB   0x8f
-#define BME280_DIG_P2_LSB   0x90
-#define BME280_DIG_P2_MSB   0x91
-#define BME280_DIG_P3_LSB   0x92
-#define BME280_DIG_P3_MSB   0x93
-#define BME280_DIG_P4_LSB   0x94
-#define BME280_DIG_P4_MSB   0x95
-#define BME280_DIG_P5_LSB   0x96
-#define BME280_DIG_P5_MSB   0x97
-#define BME280_DIG_P6_LSB   0x98
-#define BME280_DIG_P6_MSB   0x99
-#define BME280_DIG_P7_LSB   0x9a
-#define BME280_DIG_P7_MSB   0x9b
-#define BME280_DIG_P8_LSB   0x9c
-#define BME280_DIG_P8_MSB   0x9d
-#define BME280_DIG_P9_LSB   0x9e
-#define BME280_DIG_P9_MSB   0x9f
-
-#define BME280_DEVID        0xd0
-#define BME280_SOFT_RESET   0xe0
-#define BME280_STAT         0xf3
-#define BME280_CTRL_MEAS    0xf4
-#define BME280_CONFIG       0xf5
-#define BME280_PRESS_MSB    0xf7
-#define BME280_PRESS_LSB    0xf8
-#define BME280_PRESS_XLSB   0xf9
-#define BME280_TEMP_MSB     0xfa
-#define BME280_TEMP_LSB     0xfb
-#define BME280_TEMP_XLSB    0xfc
-
-/* Power modes */
-
-#define BME280_SLEEP_MODE   (0x00)
-#define BME280_FORCED_MODE  (0x01)
-#define BME280_NORMAL_MODE  (0x03)
-
-/* Oversampling for temperature. */
-
-#define BME280_OST_SKIPPED (0x00 << 5)
-#define BME280_OST_X1      (0x01 << 5)
-#define BME280_OST_X2      (0x02 << 5)
-#define BME280_OST_X4      (0x03 << 5)
-#define BME280_OST_X8      (0x04 << 5)
-#define BME280_OST_X16     (0x05 << 5)
-
-/* Oversampling for pressure. */
-
-#define BME280_OSP_SKIPPED (0x00 << 2)
-#define BME280_OSP_X1      (0x01 << 2)
-#define BME280_OSP_X2      (0x02 << 2)
-#define BME280_OSP_X4      (0x03 << 2)
-#define BME280_OSP_X8      (0x04 << 2)
-#define BME280_OSP_X16     (0x05 << 2)
-
-/* Predefined oversampling combinations. */
-
-#define BME280_OS_ULTRA_HIGH_RES  (BME280_OSP_X16 | BME280_OST_X2)
-#define BME280_OS_STANDARD_RES    (BME280_OSP_X4  | BME280_OST_X1)
-#define BME280_OS_ULTRA_LOW_POWER (BME280_OSP_X1  | BME280_OST_X1)
-
-/* Data combined from bytes to int */
-
-#define COMBINE(d) (((int)(d)[0] << 12) | ((int)(d)[1] << 4) | ((int)(d)[2] >> 4))
 
 /****************************************************************************
  * Private Function Prototypes
@@ -374,7 +292,8 @@ static int bme280_activate(FAR struct sensor_lowerhalf_s *lower,
   sninfo("TODO enable=%d\n", enable); ////
   int ret = 0;
 
-#ifdef TODO
+#ifdef TODO  
+
   FAR struct device *priv = container_of(lower,
                                                FAR struct device,
                                                sensor_lower);
@@ -382,14 +301,13 @@ static int bme280_activate(FAR struct sensor_lowerhalf_s *lower,
     {
       /* Set power mode to normal and standard sampling resolution. */
 
-      ret = bme280_putreg8(priv, BME280_CTRL_MEAS, BME280_NORMAL_MODE |
-                                 BME280_OS_STANDARD_RES);
+      ret = bme280_pm_action(priv, PM_DEVICE_ACTION_RESUME);
     }
   else
     {
       /* Set to sleep mode */
 
-      ret = bme280_putreg8(priv, BME280_CTRL_MEAS, BME280_SLEEP_MODE);
+      ret = bme280_pm_action(priv, PM_DEVICE_ACTION_SUSPEND);
     }
 
   if (ret >= 0)
