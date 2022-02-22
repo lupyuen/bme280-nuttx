@@ -17,6 +17,7 @@
 #define CONFIG_BME280_HUMIDITY_OVER_16X  //  Humidity Oversampling 16x
 #define CONFIG_BME280_STANDBY_1000MS     //  Standby Time 1000ms. Note: Will be overwritten in bme280_set_standby
 #define CONFIG_BME280_FILTER_4           //  Filter Coefficient 4
+#define CONFIG_PM_DEVICE                 //  Enable Power Management
 
 //  Other Zephyr Defines
 #define BME280_BUS_I2C  0  //  I2C Bus
@@ -41,6 +42,12 @@ enum pm_device_action {
     PM_DEVICE_ACTION_RESUME,   //  Resume the sensor
 };
 
+//  Zephyr Power Management State
+enum pm_device_state {
+    PM_DEVICE_STATE_ACTIVE,     //  Sensor is active
+    PM_DEVICE_STATE_SUSPENDED,  //  Sensor is suspended
+};
+ 
 //  Zephyr Sensor Value
 struct sensor_value {
     int32_t val1;  //  Integer part of the value
@@ -48,6 +55,10 @@ struct sensor_value {
 };
 
 struct device;
+
+//  Get the device state (active / suspended)
+static int pm_device_state_get(const struct device *priv,
+    enum pm_device_state *state);
 
 //  Check I2C Bus
 static int bme280_bus_check(const struct device *dev);

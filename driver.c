@@ -33,7 +33,7 @@
 #include <nuttx/kmalloc.h>
 #include <nuttx/fs/fs.h>
 #include <nuttx/i2c/i2c_master.h>
-#include "driver.h" //// Previously: <nuttx/sensors/bme280.h>
+#include <nuttx/sensors/bme280.h>
 #include <nuttx/sensors/sensor.h>
 
 #if defined(CONFIG_I2C) && defined(CONFIG_SENSORS_BME280)
@@ -77,7 +77,7 @@ static const struct sensor_ops_s g_sensor_ops =
  * Name: get_sensor_value
  *
  * Description:
- *   Return the sensor value as a float.
+ *   Return the sensor value as a float
  *
  ****************************************************************************/
 
@@ -90,6 +90,29 @@ static float get_sensor_value(const struct sensor_value *val)
 }
 
 /****************************************************************************
+ * Name: pm_device_state_get
+ *
+ * Description:
+ *   Get the device state (active / suspended)
+ *
+ ****************************************************************************/
+
+static int pm_device_state_get(const struct device *priv,
+  enum pm_device_state *state)
+{
+  DEBUGASSERT(priv != NULL);
+  if (priv->activated)
+    {
+      *state = PM_DEVICE_STATE_ACTIVE;
+    }
+  else
+    {
+      *state = PM_DEVICE_STATE_SUSPENDED;
+    }
+  return 0;  
+}
+
+/****************************************************************************
  * Name: bme280_bus_check
  *
  * Description:
@@ -97,8 +120,9 @@ static float get_sensor_value(const struct sensor_value *val)
  *
  ****************************************************************************/
 
-static int bme280_bus_check(const struct device *dev)
+static int bme280_bus_check(const struct device *priv)
 {
+  DEBUGASSERT(priv != NULL);
   return 0;
 }
 
@@ -113,6 +137,7 @@ static int bme280_bus_check(const struct device *dev)
 static int bme280_reg_read(const struct device *priv,
     uint8_t start, uint8_t *buf, int size)
 {
+  DEBUGASSERT(priv != NULL);
   sninfo("start=0x%02x, size=%d\n", start, size); ////
   struct i2c_msg_s msg[2];
   int ret;
@@ -156,6 +181,7 @@ static int bme280_reg_read(const struct device *priv,
 static int bme280_reg_write(const struct device *priv, uint8_t reg,
     uint8_t val)
 {
+  DEBUGASSERT(priv != NULL);
   sninfo("reg=0x%02x, val=0x%02x\n", reg, val); ////
   struct i2c_msg_s msg[2];
   uint8_t txbuffer[2];
@@ -289,10 +315,8 @@ static int bme280_set_interval(FAR struct sensor_lowerhalf_s *lower,
 static int bme280_activate(FAR struct sensor_lowerhalf_s *lower,
                            bool enable)
 {
-  sninfo("TODO enable=%d\n", enable); ////
+  sninfo("enable=%d\n", enable); ////
   int ret = 0;
-
-#ifdef TODO  
 
   FAR struct device *priv = container_of(lower,
                                                FAR struct device,
@@ -314,7 +338,6 @@ static int bme280_activate(FAR struct sensor_lowerhalf_s *lower,
     {
       priv->activated = enable;
     }
-#endif  //  TODO
 
   return ret;
 }
@@ -436,11 +459,12 @@ int bme280_register(int devno, FAR struct i2c_master_s *i2c)
       return -ENOMEM;
     }
 
-  priv->data = data;
   priv->i2c  = i2c;
   priv->addr = BME280_ADDR;
   priv->freq = BME280_FREQ;
   priv->name = "BME280";
+  priv->data = data;
+  priv->activated = true;
 
   priv->sensor_lower.ops = &g_sensor_ops;
   priv->sensor_lower.type = SENSOR_TYPE_BAROMETER;
@@ -448,7 +472,6 @@ int bme280_register(int devno, FAR struct i2c_master_s *i2c)
   /* Initialize the sensor */
 
   ret = bme280_chip_init(priv);
-
   if (ret < 0)
     {
       snerr("Failed to register driver: %d\n", ret);
@@ -460,7 +483,6 @@ int bme280_register(int devno, FAR struct i2c_master_s *i2c)
   /* Register the character driver */
 
   ret = sensor_register(&priv->sensor_lower, devno);
-
   if (ret < 0)
     {
       snerr("Failed to register driver: %d\n", ret);
