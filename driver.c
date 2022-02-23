@@ -470,33 +470,25 @@ static int bme280_activate_humi(FAR struct sensor_lowerhalf_s *lower,
 }
 
 /****************************************************************************
- * Name: bme280_fetch_baro
+ * Name: bme280_fetch
  *
  * Description:
- *   Fetch pressure and temperature from sensor
+ *   Fetch pressure, temperature and humidity from sensor
  *
  ****************************************************************************/
 
-static int bme280_fetch_baro(FAR struct sensor_lowerhalf_s *lower,
-                        FAR char *buffer, size_t buflen)
+static int bme280_fetch(FAR struct device *priv,
+                        FAR struct sensor_event_baro *baro_data,
+                        FAR struct sensor_event_humi *humi_data)
 {
-  sninfo("buflen=%d\n", buflen);
-  FAR struct device *priv = container_of(lower,
-                                               FAR struct device,
-                                               sensor_baro);
-  sninfo("priv=%x, sensor_baro=%x\n", priv, lower); ////
-
+  DEBUGASSERT(priv != NULL);
+  DEBUGASSERT(baro_data != NULL || humi_data != NULL);
   int ret;
   struct timespec ts;
-  struct sensor_event_baro baro_data;
   struct sensor_value val;
 
-  if (buflen != sizeof(baro_data))
-    {
-      return -EINVAL;
-    }
-
   /* Zephyr BME280 Driver assumes that sensor is not in sleep mode */
+
   if (!priv->activated)
     {
       snerr("Device must be active before fetch\n");
@@ -511,15 +503,6 @@ static int bme280_fetch_baro(FAR struct sensor_lowerhalf_s *lower,
       return ret;
     }
 
-  /* Get the temperature (from Zephyr BME280 Driver) */
-
-  ret = bme280_channel_get(priv, SENSOR_CHAN_AMBIENT_TEMP, &val);
-  if (ret < 0)
-    {
-      return ret;
-    }
-  baro_data.temperature = get_sensor_value(&val);
-
   /* Get the pressure (from Zephyr BME280 Driver) */
 
   ret = bme280_channel_get(priv, SENSOR_CHAN_PRESS, &val);
@@ -527,7 +510,16 @@ static int bme280_fetch_baro(FAR struct sensor_lowerhalf_s *lower,
     {
       return ret;
     }
-  baro_data.pressure = get_sensor_value(&val) * 10;
+  float pressure = get_sensor_value(&val) * 10;
+
+  /* Get the temperature (from Zephyr BME280 Driver) */
+
+  ret = bme280_channel_get(priv, SENSOR_CHAN_AMBIENT_TEMP, &val);
+  if (ret < 0)
+    {
+      return ret;
+    }
+  float temperature = get_sensor_value(&val);
 
   /* Get the humidity (from Zephyr BME280 Driver) */
 
@@ -545,13 +537,69 @@ static int bme280_fetch_baro(FAR struct sensor_lowerhalf_s *lower,
 #else
   clock_gettime(CLOCK_REALTIME, &ts);
 #endif
-  baro_data.timestamp = 1000000ull * ts.tv_sec + ts.tv_nsec / 1000;
+  uint64_t timestamp = 1000000ull * ts.tv_sec + ts.tv_nsec / 1000;
+
+  /* Return the pressure and temperature data */
+
+  if (baro_data != NULL)
+    {
+      baro_data->pressure    = pressure;
+      baro_data->temperature = temperature;
+      baro_data->timestamp   = timestamp;
+    }
+
+  /* Return the humidity data */
+
+  if (humi_data != NULL)
+    {
+      humi_data->humidity    = humidity;
+      humi_data->timestamp   = timestamp;
+    }
+
+  sninfo("temperature=%f °C, pressure=%f mbar, humidity=%f %%\n", temperature, pressure, humidity);
+  return 0;
+}
+
+/****************************************************************************
+ * Name: bme280_fetch_baro
+ *
+ * Description:
+ *   Called by NuttX to fetch pressure and temperature from sensor
+ *
+ ****************************************************************************/
+
+static int bme280_fetch_baro(FAR struct sensor_lowerhalf_s *lower,
+                        FAR char *buffer, size_t buflen)
+{
+  sninfo("buflen=%d\n", buflen);
+  int ret;
+  struct sensor_event_baro baro_data;
+
+  /* Get device struct */
+
+  FAR struct device *priv = container_of(lower,
+                                               FAR struct device,
+                                               sensor_baro);
+  sninfo("priv=%x, sensor_baro=%x\n", priv, lower); ////
+
+  /* Validate buffer size */
+
+  if (buflen != sizeof(baro_data))
+    {
+      return -EINVAL;
+    }
+
+  /* Fetch the sensor data */
+
+  ret = bme280_fetch(priv, &baro_data, NULL);
+  if (ret < 0)
+    {
+      return ret;
+    }
 
   /* Return the sensor data */
 
   memcpy(buffer, &baro_data, sizeof(baro_data));
-  sninfo("temperature=%f °C, pressure=%f mbar, humidity=%f %%\n", baro_data.temperature, baro_data.pressure, humidity);
-
   return buflen;
 }
 
@@ -559,7 +607,7 @@ static int bme280_fetch_baro(FAR struct sensor_lowerhalf_s *lower,
  * Name: bme280_fetch_humi
  *
  * Description:
- *   Fetch humidity from sensor
+ *   Called by NuttX to fetch humidity from sensor
  *
  ****************************************************************************/
 
@@ -567,77 +615,34 @@ static int bme280_fetch_humi(FAR struct sensor_lowerhalf_s *lower,
                         FAR char *buffer, size_t buflen)
 {
   sninfo("buflen=%d\n", buflen);
+  int ret;
+  struct sensor_event_humi humi_data;
+
+  /* Get device struct */
+
   FAR struct device *priv = container_of(lower,
                                                FAR struct device,
                                                sensor_humi);
   sninfo("priv=%x, sensor_humi=%x\n", priv, lower); ////
 
-  int ret;
-  struct timespec ts;
-  struct sensor_event_humi humi_data;
-  struct sensor_value val;
+  /* Validate buffer size */
 
   if (buflen != sizeof(humi_data))
     {
       return -EINVAL;
     }
 
-  /* Zephyr BME280 Driver assumes that sensor is not in sleep mode */
-  if (!priv->activated)
-    {
-      snerr("Device must be active before fetch\n");
-      return -EIO;
-    }
+  /* Fetch the sensor data */
 
-  /* Fetch the sensor data (from Zephyr BME280 Driver) */
-
-  ret = bme280_sample_fetch(priv, SENSOR_CHAN_ALL);
+  ret = bme280_fetch(priv, NULL, &humi_data);
   if (ret < 0)
     {
       return ret;
     }
-
-  /* Get the temperature (from Zephyr BME280 Driver) */
-
-  ret = bme280_channel_get(priv, SENSOR_CHAN_AMBIENT_TEMP, &val);
-  if (ret < 0)
-    {
-      return ret;
-    }
-  float temperature = get_sensor_value(&val);
-
-  /* Get the pressure (from Zephyr BME280 Driver) */
-
-  ret = bme280_channel_get(priv, SENSOR_CHAN_PRESS, &val);
-  if (ret < 0)
-    {
-      return ret;
-    }
-  float pressure = get_sensor_value(&val) * 10;
-
-  /* Get the humidity (from Zephyr BME280 Driver) */
-
-  ret = bme280_channel_get(priv, SENSOR_CHAN_HUMIDITY, &val);
-  if (ret < 0)
-    {
-      return ret;
-    }
-  humi_data.humidity = get_sensor_value(&val);
-
-  /* Get the timestamp */
-  
-#ifdef CONFIG_CLOCK_MONOTONIC
-  clock_gettime(CLOCK_MONOTONIC, &ts);
-#else
-  clock_gettime(CLOCK_REALTIME, &ts);
-#endif
-  humi_data.timestamp = 1000000ull * ts.tv_sec + ts.tv_nsec / 1000;
 
   /* Return the sensor data */
 
   memcpy(buffer, &humi_data, sizeof(humi_data));
-  sninfo("temperature=%f °C, pressure=%f mbar, humidity=%f %%\n", temperature, pressure, humi_data.humidity);
-
   return buflen;
 }
 
