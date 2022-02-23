@@ -1588,7 +1588,52 @@ bme280_activate: TODO enable=0
 nsh>
 ```
 
-# Add Humidity Sensor
+# Combined Barometer and Humidity Sensor
+
+NuttX doesn't have a Sensor Type that supports BME280 Temperature + Humidity + Pressure ... So our NuttX BME280 Driver combines 2 Sensor Types: 1️⃣ Barometer Sensor (Pressure + Temperature) 2️⃣ Humidity Sensor
+
+https://github.com/lupyuen/bme280-nuttx/blob/main/device.h#L36-L49
+
+```c
+/* NuttX Device for BME280 */
+
+struct device
+{
+  FAR struct sensor_lowerhalf_s sensor_baro;  /* Barometer and Temperature Sensor */
+  FAR struct sensor_lowerhalf_s sensor_humi;  /* Humidity Sensor */
+  FAR struct i2c_master_s *i2c; /* I2C interface */
+  uint8_t addr;                 /* BME280 I2C address */
+  int freq;                     /* BME280 Frequency <= 3.4MHz */
+  bool activated;               /* True if device is not in sleep mode */
+
+  char *name;                   /* Name of the device */
+  struct bme280_data *data;     /* Compensation parameters (bme280.c) */
+};
+```
+
+Each NuttX Sensor defines its operations for 1️⃣ Activating the sensor 2️⃣ Fetching sensor data 3️⃣ Setting the standby interval
+
+https://github.com/lupyuen/bme280-nuttx/blob/main/driver.c#L71-L87
+
+```c
+/* Operations for Barometer and Temperature Sensor */
+
+static const struct sensor_ops_s g_baro_ops =
+{
+  .activate      = bme280_activate_baro,
+  .fetch         = bme280_fetch_baro,
+  .set_interval  = bme280_set_interval_baro,
+};
+
+/* Operations for Humidity Sensor */
+
+static const struct sensor_ops_s g_humi_ops =
+{
+  .activate      = bme280_activate_humi,
+  .fetch         = bme280_fetch_humi,
+  .set_interval  = bme280_set_interval_humi,
+};
+```
 
 TODO
 
