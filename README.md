@@ -1635,17 +1635,46 @@ static const struct sensor_ops_s g_humi_ops =
 };
 ```
 
-Output Log:
+At NuttX Startup we register both BME280 sensors: Barometer Sensor and Humidity Sensor
+
+https://github.com/lupyuen/bme280-nuttx/blob/main/driver.c#L755-L773
+
+```c
+int bme280_register(int devno, FAR struct i2c_master_s *i2c)
+{
+  ...
+  /* Register the Barometer Sensor */
+
+  ret = sensor_register(&priv->sensor_baro, devno);
+  if (ret < 0)
+    {
+      snerr("Failed to register barometer sensor: %d\n", ret);
+      kmm_free(data);
+      kmm_free(priv);
+    }
+
+  /* Register the Humidity Sensor */
+
+  ret = sensor_register(&priv->sensor_humi, devno);
+  if (ret < 0)
+    {
+      snerr("Failed to register humidity sensor: %d\n", ret);
+      kmm_free(data);
+      kmm_free(priv);
+    }
+```
+
+Our NuttX BME280 Driver appears as 2 sensors: 1️⃣ "/dev/sensor/baro0" (Barometer Sensor) 2️⃣ "/dev/sensor/humi0" (Humidity Sensor)
+
+This is how we read each sensor:
 
 ```text
-NuttShell (NSH) NuttX-10.2.0-RC0
 nsh> sensortest -n 1 baro0
 SensorTest: Test /dev/sensor/baro0 with interval(1000000us), latency(0us)
 baro0: timestamp:21800000 value1:1006.94 value2:30.61
 SensorTest: Received message: baro0, number:1/1
 bl602_i2c_transfer: i2c transfer error, event = 4
-nsh>
-nsh>
+
 nsh> sensortest -n 1 humi0
 SensorTest: Test /dev/sensor/humi0 with interval(1000000us), latency(0us)
 humi0: timestamp:124080000 value:74.33
