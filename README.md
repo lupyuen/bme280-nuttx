@@ -1645,12 +1645,12 @@ sensortest -n 1 humi0
 spi_test_driver_register: devpath=/dev/spitest0, spidev=0
 bme280_register: devno=0
 bme280_register: priv=4201b770, sensor_baro=4201b770, sensor_humi=4201b78c
-bme280_reg_read: start=0xd0, size=1
+bme280_reg_read: start=0xd0, size=1, buf[0]=0x60
 bme280_chip_init: ID OK
 bme280_reg_write: reg=0xe0, val=0xb6
-bme280_reg_read: start=0xf3, size=1
+bme280_reg_read: start=0xf3, size=1, buf[0]=0x00
 bme280_reg_read: start=0x88, size=24
-bme280_reg_read: start=0xa1, size=1
+bme280_reg_read: start=0xa1, size=1, buf[0]=0x4b
 bme280_reg_read: start=0xe1, size=7
 bme280_reg_write: reg=0xf2, val=0x05
 bme280_reg_write: reg=0xf4, val=0x57
@@ -1668,19 +1668,19 @@ sensor_ioctl: cmd=a81 arg=4201c424
 bme280_set_interval_baro: period_us=1107412004
 bme280_set_interval_baro: priv=4201b770, sensor_baro=4201b770
 bme280_set_standby: value=5
-bme280_reg_read: start=0xf5, size=1
+bme280_reg_read: start=0xf5, size=1, buf[0]=0xa8
 bme280_reg_write: reg=0xf5, val=0xa8
-bme280_reg_read: start=0xf5, size=1
+bme280_reg_read: start=0xf5, size=1, buf[0]=0xa8
 sensor_ioctl: cmd=a82 arg=4201c428
 sensor_ioctl: cmd=a80 arg=00000001
 bme280_activate_baro: enable=1
 bme280_activate_baro: priv=4201b770, sensor_baro=4201b770
-bme280_reg_read: start=0xd0, size=1
+bme280_reg_read: start=0xd0, size=1, buf[0]=0x60
 bme280_chip_init: ID OK
 bme280_reg_write: reg=0xe0, val=0xb6
-bme280_reg_read: start=0xf3, size=1
+bme280_reg_read: start=0xf3, size=1, buf[0]=0x00
 bme280_reg_read: start=0x88, size=24
-bme280_reg_read: start=0xa1, size=1
+bme280_reg_read: start=0xa1, size=1, buf[0]=0x4b
 bme280_reg_read: start=0xe1, size=7
 bme280_reg_write: reg=0xf2, val=0x05
 bme280_reg_write: reg=0xf4, val=0x57
@@ -1690,12 +1690,12 @@ SensorTest: Test /dev/sensor/baro0 with interval(1000000us), latency(0us)
 sensor_pollnotify: Report events: 01
 bme280_fetch_baro: buflen=16
 bme280_fetch_baro: priv=4201b770, sensor_baro=4201b770
-bme280_reg_read: start=0xf3, size=1
-bme280_reg_read: start=0xf3, size=1
-bme280_reg_read: start=0xf3, size=1
+bme280_reg_read: start=0xf3, size=1, buf[0]=0x0c
+bme280_reg_read: start=0xf3, size=1, buf[0]=0x0c
+bme280_reg_read: start=0xf3, size=1, buf[0]=0x04
 bme280_reg_read: start=0xf7, size=8
-bme280_fetch: temperature=30.299999 °C, pressure=1006.667725 mbar, humidity=80.862305 %
-baro0: timestamp:27340000 value1:1006.67 value2:30.30
+bme280_fetch: temperature=30.820000 °C, pressure=1006.847229 mbar, humidity=75.403320 %
+baro0: timestamp:45090000 value1:1006.85 value2:30.82
 SensorTest: Received message: baro0, number:1/1
 sensor_ioctl: cmd=a80 arg=00000000
 bme280_activate_baro: enable=0
@@ -1703,24 +1703,25 @@ bme280_activate_baro: priv=4201b770, sensor_baro=4201b770
 bme280_reg_write: reg=0xf4, val=0x54
 bl602_i2c_transfer: i2c transfer error, event = 4
 nsh>
+nsh>
 nsh> sensortest -n 1 humi0
 sensor_ioctl: cmd=a81 arg=4201c424
 bme280_set_interval_humi: period_us=1107412004
 bme280_set_interval_humi: priv=4201b770, sensor_humi=4201b78c
 bme280_set_standby: value=5
-bme280_reg_read: start=0xf5, size=1
+bme280_reg_read: start=0xf5, size=1, buf[0]=0xa8
 bme280_reg_write: reg=0xf5, val=0xa8
-bme280_reg_read: start=0xf5, size=1
+bme280_reg_read: start=0xf5, size=1, buf[0]=0xa8
 sensor_ioctl: cmd=a82 arg=4201c428
 sensor_ioctl: cmd=a80 arg=00000001
 bme280_activate_humi: enable=1
 bme280_activate_humi: priv=4201b770, sensor_humi=4201b78c
-bme280_reg_read: start=0xd0, size=1
+bme280_reg_read: start=0xd0, size=1, buf[0]=0x60
 bme280_chip_init: ID OK
 bme280_reg_write: reg=0xe0, val=0xb6
-bme280_reg_read: start=0xf3, size=1
+bme280_reg_read: start=0xf3, size=1, buf[0]=0x00
 bme280_reg_read: start=0x88, size=24
-bme280_reg_read: start=0xa1, size=1
+bme280_reg_read: start=0xa1, size=1, buf[0]=0x4b
 bme280_reg_read: start=0xe1, size=7
 bme280_reg_write: reg=0xf2, val=0x05
 bme280_reg_write: reg=0xf4, val=0x57
@@ -1730,18 +1731,17 @@ SensorTest: Test /dev/sensor/humi0 with interval(1000000us), latency(0us)
 sensor_pollnotify: Report events: 01
 bme280_fetch_humi: buflen=16
 bme280_fetch_humi: priv=4201b770, sensor_humi=4201b78c
-bme280_reg_read: start=0xf3, size=1
-bme280_reg_read: start=0xf3, size=1
-bme280_reg_read: start=0xf3, size=1
+bme280_reg_read: start=0xf3, size=1, buf[0]=0x0c
+bme280_reg_read: start=0xf3, size=1, buf[0]=0x0c
+bme280_reg_read: start=0xf3, size=1, buf[0]=0x04
 bme280_reg_read: start=0xf7, size=8
-bme280_fetch: temperature=30.280001 °C, pressure=1006.700195 mbar, humidity=80.713867 %
-humi0: timestamp:36820000 value:80.71
+bme280_fetch: temperature=30.820000 °C, pressure=1006.873535 mbar, humidity=75.338867 %
+humi0: timestamp:57950000 value:75.34
 SensorTest: Received message: humi0, number:1/1
 sensor_ioctl: cmd=a80 arg=00000000
 bme280_activate_humi: enable=0
 bme280_activate_humi: priv=4201b770, sensor_humi=4201b78c
 bme280_reg_write: reg=0xf4, val=0x54
 bl602_i2c_transfer: i2c transfer error, event = 4
-nsh>
 nsh>
 ```

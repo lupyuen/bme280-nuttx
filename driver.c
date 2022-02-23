@@ -156,18 +156,20 @@ static int bme280_reg_read(const struct device *priv,
     uint8_t start, uint8_t *buf, int size)
 {
   DEBUGASSERT(priv != NULL);
-  sninfo("start=0x%02x, size=%d\n", start, size);
+  DEBUGASSERT(buf != NULL);
   struct i2c_msg_s msg[2];
   int ret;
 
   msg[0].frequency = priv->freq;
   msg[0].addr      = priv->addr;
 
-  //// Previously:
-  //// msg[0].flags     = 0;
-
-  #warning Testing: I2C_M_NOSTOP for I2C Sub Address
-  msg[0].flags     = I2C_M_NOSTOP;  ////  Testing I2C Sub Address
+#ifdef CONFIG_BL602_I2C0
+  //  For BL602: Register ID must be passed as I2C Sub Address
+  msg[0].flags     = I2C_M_NOSTOP;
+#else
+  //  Otherwise pass Register ID as I2C Data
+  msg[0].flags     = 0;
+#endif  //  CONFIG_BL602_I2C0
 
   msg[0].buffer    = &start;
   msg[0].length    = 1;
@@ -181,10 +183,19 @@ static int bme280_reg_read(const struct device *priv,
   ret = I2C_TRANSFER(priv->i2c, msg, 2);
   if (ret < 0)
     {
+      sninfo("start=0x%02x, size=%d\n", start, size);
       snerr("I2C_TRANSFER failed: %d\n", ret);
       return -1;
     }
 
+  if (size == 1)
+    {
+      sninfo("start=0x%02x, size=%d, buf[0]=0x%02x\n", start, size, buf[0]);
+    }
+  else
+    {
+      sninfo("start=0x%02x, size=%d\n", start, size);
+    }
   return OK;
 }
 
