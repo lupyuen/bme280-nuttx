@@ -1635,13 +1635,28 @@ static const struct sensor_ops_s g_humi_ops =
 };
 ```
 
-TODO
+Output Log:
 
 ```text
-sensortest -n 1 baro0
+NuttShell (NSH) NuttX-10.2.0-RC0
+nsh> sensortest -n 1 baro0
+SensorTest: Test /dev/sensor/baro0 with interval(1000000us), latency(0us)
+baro0: timestamp:21800000 value1:1006.94 value2:30.61
+SensorTest: Received message: baro0, number:1/1
+bl602_i2c_transfer: i2c transfer error, event = 4
+nsh>
+nsh>
+nsh> sensortest -n 1 humi0
+SensorTest: Test /dev/sensor/humi0 with interval(1000000us), latency(0us)
+humi0: timestamp:124080000 value:74.33
+SensorTest: Received message: humi0, number:1/1
+bl602_i2c_transfer: i2c transfer error, event = 4
+nsh>
+```
 
-sensortest -n 1 humi0
+Detailed Log:
 
+```text
 spi_test_driver_register: devpath=/dev/spitest0, spidev=0
 bme280_register: devno=0
 bme280_register: priv=4201b770, sensor_baro=4201b770, sensor_humi=4201b78c
