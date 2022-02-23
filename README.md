@@ -1760,3 +1760,24 @@ bme280_reg_write: reg=0xf4, val=0x54
 bl602_i2c_transfer: i2c transfer error, event = 4
 nsh>
 ```
+
+Why does this fail? Perhaps because BME280 is in low power mode?
+
+```text
+## Resume BME280: This is OK
+bme280_reg_write: reg=0xf4, val=0x57
+...
+## Suspend BME280: This fails
+bme280_reg_write: reg=0xf4, val=0x54
+bl602_i2c_transfer: i2c transfer error, event = 4
+```
+
+The BME280 Driver writes a different value to Register F4 and doesn't fail...
+
+```text
+## Resume BMP280: This is OK
+bmp280_putreg8: regaddr=0xf4, regval=0x2f
+...
+## Suspend BMP280: This is OK
+bmp280_putreg8: regaddr=0xf4, regval=0x00
+```
