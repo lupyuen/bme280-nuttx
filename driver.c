@@ -118,6 +118,7 @@ static int pm_device_state_get(const struct device *priv,
   enum pm_device_state *state)
 {
   DEBUGASSERT(priv != NULL);
+  DEBUGASSERT(state != NULL);
   if (priv->activated)
     {
       *state = PM_DEVICE_STATE_ACTIVE;
