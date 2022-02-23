@@ -233,6 +233,7 @@ static int bme280_reg_write(const struct device *priv, uint8_t reg,
 
 static int bme280_set_standby(FAR struct device *priv, uint8_t value)
 {
+  DEBUGASSERT(priv != NULL);
   sninfo("value=%d\n", value);
   
   uint8_t v_data_u8;
@@ -272,21 +273,18 @@ static int bme280_set_standby(FAR struct device *priv, uint8_t value)
 }
 
 /****************************************************************************
- * Name: bme280_set_interval_baro
+ * Name: bme280_set_interval
  *
  * Description:
- *   Set Standby Interval for Barometer Sensor
+ *   Set Standby Interval for the device
  *
  ****************************************************************************/
 
-static int bme280_set_interval_baro(FAR struct sensor_lowerhalf_s *lower,
+static int bme280_set_interval(FAR struct device *priv,
                                FAR unsigned int *period_us)
 {
-  sninfo("period_us=%u\n", period_us);
-  FAR struct device *priv = container_of(lower,
-                                               FAR struct device,
-                                               sensor_baro);
-  sninfo("priv=%x, sensor_baro=%x\n", priv, lower); ////
+  DEBUGASSERT(priv != NULL);
+  DEBUGASSERT(period_us != NULL);
   int ret = 0;
 
   uint8_t regval;
@@ -331,59 +329,90 @@ static int bme280_set_interval_baro(FAR struct sensor_lowerhalf_s *lower,
 }
 
 /****************************************************************************
+ * Name: bme280_set_interval_baro
+ *
+ * Description:
+ *   Call by NuttX to set Standby Interval for Barometer Sensor
+ *
+ ****************************************************************************/
+
+static int bme280_set_interval_baro(FAR struct sensor_lowerhalf_s *lower,
+                               FAR unsigned int *period_us)
+{
+  DEBUGASSERT(lower != NULL);
+  DEBUGASSERT(period_us != NULL);
+  sninfo("period_us=%u\n", period_us);
+
+  /* Get device struct */
+
+  FAR struct device *priv = container_of(lower,
+                                               FAR struct device,
+                                               sensor_baro);
+  sninfo("priv=%x, sensor_baro=%x\n", priv, lower); ////
+
+  /* Set the standby interval */
+
+  return bme280_set_interval(priv, period_us);
+}
+
+/****************************************************************************
  * Name: bme280_set_interval_humi
  *
  * Description:
- *   Set Standby Interval for Humidity Sensor
+ *   Called by NuttX to set Standby Interval for Humidity Sensor
  *
  ****************************************************************************/
 
 static int bme280_set_interval_humi(FAR struct sensor_lowerhalf_s *lower,
                                FAR unsigned int *period_us)
 {
+  DEBUGASSERT(lower != NULL);
+  DEBUGASSERT(period_us != NULL);
   sninfo("period_us=%u\n", period_us);
+
+  /* Get device struct */
+
   FAR struct device *priv = container_of(lower,
                                                FAR struct device,
                                                sensor_humi);
   sninfo("priv=%x, sensor_humi=%x\n", priv, lower); ////
+
+  /* Set the standby interval */
+
+  return bme280_set_interval(priv, period_us);
+}
+
+/****************************************************************************
+ * Name: bme280_activate
+ *
+ * Description:
+ *   Set Power Mode for the device. If enable is true, set Power Mode 
+ *   to normal. Else set to sleep mode.
+ *
+ ****************************************************************************/
+
+static int bme280_activate(FAR struct device *priv,
+                           bool enable)
+{
+  DEBUGASSERT(priv != NULL);
   int ret = 0;
 
-  uint8_t regval;
-
-  switch (*period_us)
+  if (enable)
     {
-      case 500:
-        regval = BME280_STANDBY_05_MS;
-        break;
-      case 62500:
-        regval = BME280_STANDBY_63_MS;
-        break;
-      case 125000:
-        regval = BME280_STANDBY_125_MS;
-        break;
-      case 250000:
-        regval = BME280_STANDBY_250_MS;
-        break;
-      case 500000:
-        regval = BME280_STANDBY_500_MS;
-        break;
-      case 1000000:
-        regval = BME280_STANDBY_1000_MS;
-        break;
-      case 2000000:
-        regval = BME280_STANDBY_2000_MS;
-        break;
-      case 4000000:
-        regval = BME280_STANDBY_4000_MS;
-        break;
-      default:
-        ret = -EINVAL;
-        break;
+      /* Set power mode to normal */
+
+      ret = bme280_pm_action(priv, PM_DEVICE_ACTION_RESUME);
+    }
+  else
+    {
+      /* Set to sleep mode */
+
+      ret = bme280_pm_action(priv, PM_DEVICE_ACTION_SUSPEND);
     }
 
-  if (ret == 0)
+  if (ret >= 0)
     {
-      ret = bme280_set_standby(priv, regval);
+      priv->activated = enable;
     }
 
   return ret;
@@ -401,32 +430,19 @@ static int bme280_set_interval_humi(FAR struct sensor_lowerhalf_s *lower,
 static int bme280_activate_baro(FAR struct sensor_lowerhalf_s *lower,
                            bool enable)
 {
+  DEBUGASSERT(lower != NULL);
   sninfo("enable=%d\n", enable);
-  int ret = 0;
+
+  /* Get device struct */
 
   FAR struct device *priv = container_of(lower,
                                                FAR struct device,
                                                sensor_baro);
   sninfo("priv=%x, sensor_baro=%x\n", priv, lower); ////
-  if (enable)
-    {
-      /* Set power mode to normal */
 
-      ret = bme280_pm_action(priv, PM_DEVICE_ACTION_RESUME);
-    }
-  else
-    {
-      /* Set to sleep mode */
+  /* Set the power mode */
 
-      ret = bme280_pm_action(priv, PM_DEVICE_ACTION_SUSPEND);
-    }
-
-  if (ret >= 0)
-    {
-      priv->activated = enable;
-    }
-
-  return ret;
+  return bme280_activate(priv, enable);
 }
 
 /****************************************************************************
@@ -441,32 +457,19 @@ static int bme280_activate_baro(FAR struct sensor_lowerhalf_s *lower,
 static int bme280_activate_humi(FAR struct sensor_lowerhalf_s *lower,
                            bool enable)
 {
+  DEBUGASSERT(lower != NULL);
   sninfo("enable=%d\n", enable);
-  int ret = 0;
+
+  /* Get device struct */
 
   FAR struct device *priv = container_of(lower,
                                                FAR struct device,
                                                sensor_humi);
   sninfo("priv=%x, sensor_humi=%x\n", priv, lower); ////
-  if (enable)
-    {
-      /* Set power mode to normal */
 
-      ret = bme280_pm_action(priv, PM_DEVICE_ACTION_RESUME);
-    }
-  else
-    {
-      /* Set to sleep mode */
+  /* Set the power mode */
 
-      ret = bme280_pm_action(priv, PM_DEVICE_ACTION_SUSPEND);
-    }
-
-  if (ret >= 0)
-    {
-      priv->activated = enable;
-    }
-
-  return ret;
+  return bme280_activate(priv, enable);
 }
 
 /****************************************************************************
@@ -571,6 +574,8 @@ static int bme280_fetch(FAR struct device *priv,
 static int bme280_fetch_baro(FAR struct sensor_lowerhalf_s *lower,
                         FAR char *buffer, size_t buflen)
 {
+  DEBUGASSERT(lower != NULL);
+  DEBUGASSERT(buffer != NULL);
   sninfo("buflen=%d\n", buflen);
   int ret;
   struct sensor_event_baro baro_data;
@@ -614,6 +619,8 @@ static int bme280_fetch_baro(FAR struct sensor_lowerhalf_s *lower,
 static int bme280_fetch_humi(FAR struct sensor_lowerhalf_s *lower,
                         FAR char *buffer, size_t buflen)
 {
+  DEBUGASSERT(lower != NULL);
+  DEBUGASSERT(buffer != NULL);
   sninfo("buflen=%d\n", buflen);
   int ret;
   struct sensor_event_humi humi_data;
@@ -668,6 +675,7 @@ static int bme280_fetch_humi(FAR struct sensor_lowerhalf_s *lower,
 
 int bme280_register(int devno, FAR struct i2c_master_s *i2c)
 {
+  DEBUGASSERT(i2c != NULL);
   sninfo("devno=%d\n", devno);
   FAR struct device *priv;
   int ret;
