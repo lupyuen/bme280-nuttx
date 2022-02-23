@@ -79,17 +79,7 @@ struct bme280_config {
 };
 
 #ifdef __NuttX__
-struct device
-{
-	FAR struct sensor_lowerhalf_s sensor_lower;
-	FAR struct i2c_master_s *i2c; /* I2C interface */
-	uint8_t addr;                 /* BME280 I2C address */
-	int freq;                     /* BME280 Frequency <= 3.4MHz */
-	bool activated;
-
-	char *name;                   /* TODO: Name of the device */
-	struct bme280_data *data;     /* TODO: Compensation parameters */
-};
+#include "device.h"
 #endif  //  __NuttX__
 
 #ifndef __NuttX__

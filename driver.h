@@ -121,5 +121,5 @@ int bme280_register(int devno, FAR struct i2c_master_s *i2c);
 }
 #endif
 
-#endif /* CONFIG_I2C && CONFIG_SENSORS_BME280 */
-#endif /* __INCLUDE_NUTTX_BME280_H */
+#endif /* CONFIG_I2C && (CONFIG_SENSORS_BME280 || CONFIG_SENSORS_BME280_SCU) */
+#endif /* __INCLUDE_NUTTX_SENSORS_BME280_H */
