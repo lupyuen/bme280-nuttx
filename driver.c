@@ -51,22 +51,39 @@
 
 /* Sensor methods */
 
-static int bme280_set_interval(FAR struct sensor_lowerhalf_s *lower,
+static int bme280_set_interval_baro(FAR struct sensor_lowerhalf_s *lower,
                                FAR unsigned int *period_us);
-static int bme280_activate(FAR struct sensor_lowerhalf_s *lower,
+static int bme280_set_interval_humi(FAR struct sensor_lowerhalf_s *lower,
+                               FAR unsigned int *period_us);
+static int bme280_activate_baro(FAR struct sensor_lowerhalf_s *lower,
                            bool enable);
-static int bme280_fetch(FAR struct sensor_lowerhalf_s *lower,
+static int bme280_activate_humi(FAR struct sensor_lowerhalf_s *lower,
+                           bool enable);
+static int bme280_fetch_baro(FAR struct sensor_lowerhalf_s *lower,
+                        FAR char *buffer, size_t buflen);
+static int bme280_fetch_humi(FAR struct sensor_lowerhalf_s *lower,
                         FAR char *buffer, size_t buflen);
 
 /****************************************************************************
  * Private Data
  ****************************************************************************/
 
-static const struct sensor_ops_s g_sensor_ops =
+/* Operations for Barometer and Temperature Sensor */
+
+static const struct sensor_ops_s g_baro_ops =
 {
-  .activate      = bme280_activate,
-  .fetch         = bme280_fetch,
-  .set_interval  = bme280_set_interval,
+  .activate      = bme280_activate_baro,
+  .fetch         = bme280_fetch_baro,
+  .set_interval  = bme280_set_interval_baro,
+};
+
+/* Operations for Humidity Sensor */
+
+static const struct sensor_ops_s g_humi_ops =
+{
+  .activate      = bme280_activate_humi,
+  .fetch         = bme280_fetch_humi,
+  .set_interval  = bme280_set_interval_humi,
 };
 
 /****************************************************************************
@@ -255,16 +272,21 @@ static int bme280_set_standby(FAR struct device *priv, uint8_t value)
 }
 
 /****************************************************************************
- * Name: bme280_set_interval
+ * Name: bme280_set_interval_baro
+ *
+ * Description:
+ *   Set Standby Interval for Barometer Sensor
+ *
  ****************************************************************************/
 
-static int bme280_set_interval(FAR struct sensor_lowerhalf_s *lower,
+static int bme280_set_interval_baro(FAR struct sensor_lowerhalf_s *lower,
                                FAR unsigned int *period_us)
 {
   sninfo("period_us=%u\n", period_us);
   FAR struct device *priv = container_of(lower,
                                                FAR struct device,
-                                               sensor_lower);
+                                               sensor_baro);
+  sninfo("priv=%x, sensor_baro=%x\n", priv, lower); ////
   int ret = 0;
 
   uint8_t regval;
@@ -309,10 +331,74 @@ static int bme280_set_interval(FAR struct sensor_lowerhalf_s *lower,
 }
 
 /****************************************************************************
- * Name: bme280_activate
+ * Name: bme280_set_interval_humi
+ *
+ * Description:
+ *   Set Standby Interval for Humidity Sensor
+ *
  ****************************************************************************/
 
-static int bme280_activate(FAR struct sensor_lowerhalf_s *lower,
+static int bme280_set_interval_humi(FAR struct sensor_lowerhalf_s *lower,
+                               FAR unsigned int *period_us)
+{
+  sninfo("period_us=%u\n", period_us);
+  FAR struct device *priv = container_of(lower,
+                                               FAR struct device,
+                                               sensor_humi);
+  sninfo("priv=%x, sensor_humi=%x\n", priv, lower); ////
+  int ret = 0;
+
+  uint8_t regval;
+
+  switch (*period_us)
+    {
+      case 500:
+        regval = BME280_STANDBY_05_MS;
+        break;
+      case 62500:
+        regval = BME280_STANDBY_63_MS;
+        break;
+      case 125000:
+        regval = BME280_STANDBY_125_MS;
+        break;
+      case 250000:
+        regval = BME280_STANDBY_250_MS;
+        break;
+      case 500000:
+        regval = BME280_STANDBY_500_MS;
+        break;
+      case 1000000:
+        regval = BME280_STANDBY_1000_MS;
+        break;
+      case 2000000:
+        regval = BME280_STANDBY_2000_MS;
+        break;
+      case 4000000:
+        regval = BME280_STANDBY_4000_MS;
+        break;
+      default:
+        ret = -EINVAL;
+        break;
+    }
+
+  if (ret == 0)
+    {
+      ret = bme280_set_standby(priv, regval);
+    }
+
+  return ret;
+}
+
+/****************************************************************************
+ * Name: bme280_activate_baro
+ *
+ * Description:
+ *   Set Power Mode for Barometer Sensor. If enable is true, set Power Mode 
+ *   to normal. Else set to sleep mode.
+ *
+ ****************************************************************************/
+
+static int bme280_activate_baro(FAR struct sensor_lowerhalf_s *lower,
                            bool enable)
 {
   sninfo("enable=%d\n", enable);
@@ -320,7 +406,8 @@ static int bme280_activate(FAR struct sensor_lowerhalf_s *lower,
 
   FAR struct device *priv = container_of(lower,
                                                FAR struct device,
-                                               sensor_lower);
+                                               sensor_baro);
+  sninfo("priv=%x, sensor_baro=%x\n", priv, lower); ////
   if (enable)
     {
       /* Set power mode to normal */
@@ -343,16 +430,61 @@ static int bme280_activate(FAR struct sensor_lowerhalf_s *lower,
 }
 
 /****************************************************************************
- * Name: bme280_fetch
+ * Name: bme280_activate_humi
+ *
+ * Description:
+ *   Set Power Mode for Humidity Sensor. If enable is true, set Power Mode 
+ *   to normal. Else set to sleep mode.
+ *
  ****************************************************************************/
 
-static int bme280_fetch(FAR struct sensor_lowerhalf_s *lower,
+static int bme280_activate_humi(FAR struct sensor_lowerhalf_s *lower,
+                           bool enable)
+{
+  sninfo("enable=%d\n", enable);
+  int ret = 0;
+
+  FAR struct device *priv = container_of(lower,
+                                               FAR struct device,
+                                               sensor_humi);
+  sninfo("priv=%x, sensor_humi=%x\n", priv, lower); ////
+  if (enable)
+    {
+      /* Set power mode to normal */
+
+      ret = bme280_pm_action(priv, PM_DEVICE_ACTION_RESUME);
+    }
+  else
+    {
+      /* Set to sleep mode */
+
+      ret = bme280_pm_action(priv, PM_DEVICE_ACTION_SUSPEND);
+    }
+
+  if (ret >= 0)
+    {
+      priv->activated = enable;
+    }
+
+  return ret;
+}
+
+/****************************************************************************
+ * Name: bme280_fetch_baro
+ *
+ * Description:
+ *   Fetch pressure and temperature from sensor
+ *
+ ****************************************************************************/
+
+static int bme280_fetch_baro(FAR struct sensor_lowerhalf_s *lower,
                         FAR char *buffer, size_t buflen)
 {
   sninfo("buflen=%d\n", buflen);
   FAR struct device *priv = container_of(lower,
                                                FAR struct device,
-                                               sensor_lower);
+                                               sensor_baro);
+  sninfo("priv=%x, sensor_baro=%x\n", priv, lower); ////
 
   int ret;
   struct timespec ts;
@@ -424,6 +556,92 @@ static int bme280_fetch(FAR struct sensor_lowerhalf_s *lower,
 }
 
 /****************************************************************************
+ * Name: bme280_fetch_humi
+ *
+ * Description:
+ *   Fetch humidity from sensor
+ *
+ ****************************************************************************/
+
+static int bme280_fetch_humi(FAR struct sensor_lowerhalf_s *lower,
+                        FAR char *buffer, size_t buflen)
+{
+  sninfo("buflen=%d\n", buflen);
+  FAR struct device *priv = container_of(lower,
+                                               FAR struct device,
+                                               sensor_humi);
+  sninfo("priv=%x, sensor_humi=%x\n", priv, lower); ////
+
+  int ret;
+  struct timespec ts;
+  struct sensor_event_humi humi_data;
+  struct sensor_value val;
+
+  if (buflen != sizeof(humi_data))
+    {
+      return -EINVAL;
+    }
+
+  /* Zephyr BME280 Driver assumes that sensor is not in sleep mode */
+  if (!priv->activated)
+    {
+      snerr("Device must be active before fetch\n");
+      return -EIO;
+    }
+
+  /* Fetch the sensor data (from Zephyr BME280 Driver) */
+
+  ret = bme280_sample_fetch(priv, SENSOR_CHAN_ALL);
+  if (ret < 0)
+    {
+      return ret;
+    }
+
+  /* Get the temperature (from Zephyr BME280 Driver) */
+
+  ret = bme280_channel_get(priv, SENSOR_CHAN_AMBIENT_TEMP, &val);
+  if (ret < 0)
+    {
+      return ret;
+    }
+  float temperature = get_sensor_value(&val);
+
+  /* Get the pressure (from Zephyr BME280 Driver) */
+
+  ret = bme280_channel_get(priv, SENSOR_CHAN_PRESS, &val);
+  if (ret < 0)
+    {
+      return ret;
+    }
+  float pressure = get_sensor_value(&val) * 10;
+
+  /* Get the humidity (from Zephyr BME280 Driver) */
+
+  ret = bme280_channel_get(priv, SENSOR_CHAN_HUMIDITY, &val);
+  if (ret < 0)
+    {
+      return ret;
+    }
+  humi_data.humidity = get_sensor_value(&val);
+
+  /* Get the timestamp */
+  
+#ifdef CONFIG_CLOCK_MONOTONIC
+  clock_gettime(CLOCK_MONOTONIC, &ts);
+#else
+  clock_gettime(CLOCK_REALTIME, &ts);
+#endif
+  humi_data.timestamp = 1000000ull * ts.tv_sec + ts.tv_nsec / 1000;
+
+  /* Return the sensor data */
+
+  memcpy(buffer, &humi_data, sizeof(humi_data));
+  sninfo("temperature=%f °C, pressure=%f mbar, humidity=%f %%\n", temperature, pressure, humi_data.humidity);
+
+  return buflen;
+}
+
+/****************************************************************************
  * Public Functions
  ****************************************************************************/
 
@@ -449,7 +667,7 @@ int bme280_register(int devno, FAR struct i2c_master_s *i2c)
   FAR struct device *priv;
   int ret;
 
-  /* Initialize the BME280 device structure */
+  /* Initialize the device structure */
 
   priv = (FAR struct device *)kmm_zalloc(sizeof(struct device));
   if (!priv)
@@ -457,6 +675,7 @@ int bme280_register(int devno, FAR struct i2c_master_s *i2c)
       snerr("Failed to allocate instance\n");
       return -ENOMEM;
     }
+  sninfo("priv=%x, sensor_baro=%x, sensor_humi=%x\n", priv, &(priv->sensor_baro), &(priv->sensor_humi)); ////
 
   /* Allocate the Compensation Parameters */
 
@@ -475,10 +694,17 @@ int bme280_register(int devno, FAR struct i2c_master_s *i2c)
   priv->data = data;
   priv->activated = true;
 
-  priv->sensor_lower.ops = &g_sensor_ops;
-  priv->sensor_lower.type = SENSOR_TYPE_BAROMETER;
+  /* Initialize the Barometer Sensor */
 
-  /* Initialize the sensor */
+  priv->sensor_baro.ops = &g_baro_ops;
+  priv->sensor_baro.type = SENSOR_TYPE_BAROMETER;
+
+  /* Initialize the Humidity Sensor */
+
+  priv->sensor_humi.ops = &g_humi_ops;
+  priv->sensor_humi.type = SENSOR_TYPE_RELATIVE_HUMIDITY;
+
+  /* Initialize the Sensor Hardware */
 
   ret = bme280_chip_init(priv);
   if (ret < 0)
@@ -501,12 +727,22 @@ int bme280_register(int devno, FAR struct i2c_master_s *i2c)
     }
   priv->activated = false;
 
-  /* Register the character driver */
+  /* Register the Barometer Sensor */
 
-  ret = sensor_register(&priv->sensor_lower, devno);
+  ret = sensor_register(&priv->sensor_baro, devno);
   if (ret < 0)
     {
-      snerr("Failed to register driver: %d\n", ret);
+      snerr("Failed to register barometer sensor: %d\n", ret);
+      kmm_free(data);
+      kmm_free(priv);
+    }
+
+  /* Register the Humidity Sensor */
+
+  ret = sensor_register(&priv->sensor_humi, devno);
+  if (ret < 0)
+    {
+      snerr("Failed to register humidity sensor: %d\n", ret);
       kmm_free(data);
       kmm_free(priv);
     }

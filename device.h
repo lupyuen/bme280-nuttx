@@ -33,9 +33,12 @@
  * Public Types
  ****************************************************************************/
 
+/* NuttX Device for BME280 */
+
 struct device
 {
-  FAR struct sensor_lowerhalf_s sensor_lower;
+  FAR struct sensor_lowerhalf_s sensor_baro;  /* Barometer and Temperature Sensor */
+  FAR struct sensor_lowerhalf_s sensor_humi;  /* Humidity Sensor */
   FAR struct i2c_master_s *i2c; /* I2C interface */
   uint8_t addr;                 /* BME280 I2C address */
   int freq;                     /* BME280 Frequency <= 3.4MHz */
