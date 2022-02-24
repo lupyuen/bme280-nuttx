@@ -353,14 +353,14 @@ static int bme280_set_interval_baro(FAR struct sensor_lowerhalf_s *lower,
 {
   DEBUGASSERT(lower != NULL);
   DEBUGASSERT(period_us != NULL);
-  sninfo("period_us=%u\n", period_us);
+  sninfo("period_us=%u\n", *period_us);
 
   /* Get device struct */
 
   FAR struct device *priv = container_of(lower,
                                                FAR struct device,
                                                sensor_baro);
-  sninfo("priv=%x, sensor_baro=%x\n", priv, lower); ////
+  sninfo("priv=%p, sensor_baro=%p\n", priv, lower); ////
 
   /* Set the standby interval */
 
@@ -380,14 +380,14 @@ static int bme280_set_interval_humi(FAR struct sensor_lowerhalf_s *lower,
 {
   DEBUGASSERT(lower != NULL);
   DEBUGASSERT(period_us != NULL);
-  sninfo("period_us=%u\n", period_us);
+  sninfo("period_us=%u\n", *period_us);
 
   /* Get device struct */
 
   FAR struct device *priv = container_of(lower,
                                                FAR struct device,
                                                sensor_humi);
-  sninfo("priv=%x, sensor_humi=%x\n", priv, lower); ////
+  sninfo("priv=%p, sensor_humi=%p\n", priv, lower); ////
 
   /* Set the standby interval */
 
@@ -450,7 +450,7 @@ static int bme280_activate_baro(FAR struct sensor_lowerhalf_s *lower,
   FAR struct device *priv = container_of(lower,
                                                FAR struct device,
                                                sensor_baro);
-  sninfo("priv=%x, sensor_baro=%x\n", priv, lower); ////
+  sninfo("priv=%p, sensor_baro=%p\n", priv, lower); ////
 
   /* Set the power mode */
 
@@ -477,7 +477,7 @@ static int bme280_activate_humi(FAR struct sensor_lowerhalf_s *lower,
   FAR struct device *priv = container_of(lower,
                                                FAR struct device,
                                                sensor_humi);
-  sninfo("priv=%x, sensor_humi=%x\n", priv, lower); ////
+  sninfo("priv=%p, sensor_humi=%p\n", priv, lower); ////
 
   /* Set the power mode */
 
@@ -597,7 +597,7 @@ static int bme280_fetch_baro(FAR struct sensor_lowerhalf_s *lower,
   FAR struct device *priv = container_of(lower,
                                                FAR struct device,
                                                sensor_baro);
-  sninfo("priv=%x, sensor_baro=%x\n", priv, lower); ////
+  sninfo("priv=%p, sensor_baro=%p\n", priv, lower); ////
 
   /* Validate buffer size */
 
@@ -642,7 +642,7 @@ static int bme280_fetch_humi(FAR struct sensor_lowerhalf_s *lower,
   FAR struct device *priv = container_of(lower,
                                                FAR struct device,
                                                sensor_humi);
-  sninfo("priv=%x, sensor_humi=%x\n", priv, lower); ////
+  sninfo("priv=%p, sensor_humi=%p\n", priv, lower); ////
 
   /* Validate buffer size */
 
@@ -700,7 +700,7 @@ int bme280_register(int devno, FAR struct i2c_master_s *i2c)
       snerr("Failed to allocate instance\n");
       return -ENOMEM;
     }
-  sninfo("priv=%x, sensor_baro=%x, sensor_humi=%x\n", priv, &(priv->sensor_baro), &(priv->sensor_humi)); ////
+  sninfo("priv=%p, sensor_baro=%p, sensor_humi=%p\n", priv, &(priv->sensor_baro), &(priv->sensor_humi)); ////
 
   /* Allocate the Compensation Parameters */
 
