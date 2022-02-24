@@ -1671,16 +1671,15 @@ This is how we read each sensor:
 ```text
 nsh> sensortest -n 1 baro0
 SensorTest: Test /dev/sensor/baro0 with interval(1000000us), latency(0us)
-baro0: timestamp:21800000 value1:1006.94 value2:30.61
+baro0: timestamp:16730000 value1:1007.48 value2:28.93
 SensorTest: Received message: baro0, number:1/1
 bl602_i2c_transfer: i2c transfer error, event = 4
 
 nsh> sensortest -n 1 humi0
 SensorTest: Test /dev/sensor/humi0 with interval(1000000us), latency(0us)
-humi0: timestamp:124080000 value:74.33
+humi0: timestamp:23780000 value:87.72
 SensorTest: Received message: humi0, number:1/1
 bl602_i2c_transfer: i2c transfer error, event = 4
-nsh>
 ```
 
 Detailed Log:

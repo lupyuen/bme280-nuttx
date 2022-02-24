@@ -547,11 +547,7 @@ static int bme280_fetch(FAR struct device *priv,
 
   /* Get the timestamp */
   
-#ifdef CONFIG_CLOCK_MONOTONIC
-  clock_gettime(CLOCK_MONOTONIC, &ts);
-#else
-  clock_gettime(CLOCK_REALTIME, &ts);
-#endif
+  clock_systime_timespec(&ts);
   uint64_t timestamp = 1000000ull * ts.tv_sec + ts.tv_nsec / 1000;
 
   /* Return the pressure and temperature data */
