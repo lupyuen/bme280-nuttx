@@ -87,6 +87,26 @@ Configure NuttX to enable the I2C Character Driver, BMP280 Driver and Sensor Tes
 
 [(See the .config for BL602)](https://gist.github.com/lupyuen/9d84889f5e2415ecb0f28cea2c2a657f)
 
+# Change I2C Address and Device ID
+
+For testing, we change the I2C Address and Device ID for BME280...
+
+https://github.com/lupyuen/incubator-nuttx/blob/bmp280/drivers/sensors/bmp280.c#L45-L57
+
+```c
+////  Previously: I2C Address of BMP280
+////  #define BMP280_ADDR         0x76
+
+#warning Testing: I2C Address of BME280
+#define BMP280_ADDR         0x77 //// BME280
+
+////  Previously: Device ID of BMP280
+////  #define DEVID               0x58
+
+#warning Testing: Device ID of BME280
+#define DEVID               0x60 //// BME280
+```
+
 # Register BMP280 Driver
 
 Register BMP280 Driver at startup...
@@ -119,26 +139,6 @@ int bl602_bringup(void)
       _err("ERROR: Failed to register BMP280\n");
     }
 #endif /* CONFIG_SENSORS_BMP280 */
-```
-
-# Change I2C Address and Device ID
-
-For testing, we change the I2C Address and Device ID for BME280...
-
-https://github.com/lupyuen/incubator-nuttx/blob/bmp280/drivers/sensors/bmp280.c#L45-L57
-
-```c
-////  Previously: I2C Address of BMP280
-////  #define BMP280_ADDR         0x76
-
-#warning Testing: I2C Address of BME280
-#define BMP280_ADDR         0x77 //// BME280
-
-////  Previously: Device ID of BMP280
-////  #define DEVID               0x58
-
-#warning Testing: Device ID of BME280
-#define DEVID               0x60 //// BME280
 ```
 
 # Invalid Device ID
