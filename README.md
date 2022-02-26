@@ -4,7 +4,50 @@ Read the article...
 
 -   ["Apache NuttX Driver for BME280 Sensor: Ported from Zephyr OS"](https://lupyuen.github.io/articles/bme280)
 
-Will Apache NuttX OS talk I2C with Bosch BME280 Sensor? (Temperature + Humidity + Air Pressure) ... Let's find out!
+# Install Driver
+
+To add this repo to your NuttX project...
+
+```bash
+cd nuttx/nuttx/drivers/sensors
+git submodule add https://github.com/lupyuen/bme280-nuttx bme280
+ln -s bme280/bundle.c bme280.c
+
+cd nuttx/nuttx/include/nuttx/sensors
+ln -s ../../../drivers/sensors/bme280/bundle.h bme280.h
+```
+
+Next update the Makefile and Kconfig...
+
+-   [See the modified Makefile and Kconfig](https://github.com/lupyuen/incubator-nuttx/commit/1e0c62d409c863e866dbdea5d7e1e2d7b6d3cfc0)
+
+Then update the NuttX Build Config...
+
+```bash
+## TODO: Change this to the path of our "incubator-nuttx" folder
+cd nuttx/nuttx
+
+## Preserve the Build Config
+cp .config ../config
+
+## Erase the Build Config and Kconfig files
+make distclean
+
+## For BL602: Configure the build for BL602
+./tools/configure.sh bl602evb:nsh
+
+## For ESP32: Configure the build for ESP32.
+## TODO: Change "esp32-devkitc" to our ESP32 board.
+./tools/configure.sh esp32-devkitc:nsh
+
+## Restore the Build Config
+cp ../config .config
+
+## Edit the Build Config
+make menuconfig 
+```
+
+In menuconfig, enable the Bosch BME280 Sensor under "Device Drivers → Sensor Device Support".
 
 # Test with Bus Pirate
 
@@ -674,51 +717,6 @@ Zephyr BME280 Driver looks similar to [NuttX BMP280 Driver](https://github.com/a
 `bme280_sample_fetch` and `bme280_channel_get` are explained in the Zephyr Sensor API:
 
 https://docs.zephyrproject.org/latest/reference/peripherals/sensor.html
-
-# Install Driver
-
-To add this repo to your NuttX project...
-
-```bash
-cd nuttx/nuttx/drivers/sensors
-git submodule add https://github.com/lupyuen/bme280-nuttx bme280
-ln -s bme280/bundle.c bme280.c
-
-cd nuttx/nuttx/include/nuttx/sensors
-ln -s ../../../drivers/sensors/bme280/bundle.h bme280.h
-```
-
-Next update the Makefile and Kconfig...
-
--   [See the modified Makefile and Kconfig](https://github.com/lupyuen/incubator-nuttx/commit/1e0c62d409c863e866dbdea5d7e1e2d7b6d3cfc0)
-
-Then update the NuttX Build Config...
-
-```bash
-## TODO: Change this to the path of our "incubator-nuttx" folder
-cd nuttx/nuttx
-
-## Preserve the Build Config
-cp .config ../config
-
-## Erase the Build Config and Kconfig files
-make distclean
-
-## For BL602: Configure the build for BL602
-./tools/configure.sh bl602evb:nsh
-
-## For ESP32: Configure the build for ESP32.
-## TODO: Change "esp32-devkitc" to our ESP32 board.
-./tools/configure.sh esp32-devkitc:nsh
-
-## Restore the Build Config
-cp ../config .config
-
-## Edit the Build Config
-make menuconfig 
-```
-
-In menuconfig, enable the Bosch BME280 Sensor under "Device Drivers → Sensor Device Support".
 
 # Wrap Zephyr Driver as NuttX Driver
 
