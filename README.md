@@ -49,6 +49,47 @@ make menuconfig
 
 In menuconfig, enable the Bosch BME280 Sensor under "Device Drivers → Sensor Device Support".
 
+Edit the function `bl602_bringup` or `esp32_bringup` in this file...
+
+```text
+## For BL602:
+nuttx/boards/risc-v/bl602/bl602evb/src/bl602_bringup.c
+
+## For ESP32: Change "esp32-devkitc" to our ESP32 board 
+nuttx/boards/xtensa/esp32/esp32-devkitc/src/esp32_bringup.c
+```
+
+And call `bme280_register` to register our BME280 Driver:
+
+https://github.com/lupyuen/incubator-nuttx/blob/bme280/boards/risc-v/bl602/bl602evb/src/bl602_bringup.c#L623-L640    
+
+```c
+#ifdef CONFIG_SENSORS_BME280
+#include <nuttx/sensors/bme280.h>
+#endif /* CONFIG_SENSORS_BME280 */
+...
+int bl602_bringup(void) {
+  ...
+#ifdef CONFIG_SENSORS_BME280
+
+  /* Init I2C bus for BME280 */
+
+  struct i2c_master_s *bme280_i2c_bus = bl602_i2cbus_initialize(0);
+  if (!bme280_i2c_bus)
+    {
+      _err("ERROR: Failed to get I2C%d interface\n", 0);
+    }
+
+  /* Register the BME280 driver */
+
+  ret = bme280_register(0, bme280_i2c_bus);
+  if (ret < 0)
+    {
+      _err("ERROR: Failed to register BME280\n");
+    }
+#endif /* CONFIG_SENSORS_BME280 */
+```
+
 # Test with Bus Pirate
 
 [__Bus Pirate__](http://dangerousprototypes.com/docs/Bus_Pirate) is a useful gadget for verifying whether our BME280 Sensor works OK. And for checking the I2C bytes that should be sent down the wire to BME280.
