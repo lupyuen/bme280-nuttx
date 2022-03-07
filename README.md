@@ -9,12 +9,14 @@ Read the article...
 To add this repo to your NuttX project...
 
 ```bash
-cd nuttx/nuttx/drivers/sensors
+pushd nuttx/nuttx/drivers/sensors
 git submodule add https://github.com/lupyuen/bme280-nuttx bme280
 ln -s bme280/bundle.c bme280.c
+popd
 
-cd nuttx/nuttx/include/nuttx/sensors
+pushd nuttx/nuttx/include/nuttx/sensors
 ln -s ../../../drivers/sensors/bme280/bundle.h bme280.h
+popd
 ```
 
 Next update the Makefile and Kconfig...
