@@ -1848,7 +1848,7 @@ bme280_reg_write: reg=0xf4, val=0x54
 bl602_i2c_transfer: i2c transfer error, event = 4
 ```
 
-The BME280 Driver writes a different value to Register F4 and doesn't fail...
+The BMP280 Driver writes a different value to Register F4 and doesn't fail...
 
 ```text
 ## Resume BMP280: This is OK
