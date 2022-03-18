@@ -1466,6 +1466,8 @@ Here's the Logic Analyser Output when BME280 Driver loads during startup...
 
 ![Bottom](https://lupyuen.github.io/images/bme280-boot2.png)
 
+[(Source)](https://github.com/lupyuen/lupyuen.github.io/blob/master/images/bme280-boot.kvdat)
+
 Here's the Logic Analyser Output when we read the Sensor Data from BME280 Driver...
 
 (`sensortest -n 1 baro0` from the previous section)
@@ -1475,3 +1477,5 @@ Here's the Logic Analyser Output when we read the Sensor Data from BME280 Driver
 ![Middle](https://lupyuen.github.io/images/bme280-read2.png)
 
 ![Bottom](https://lupyuen.github.io/images/bme280-read3.png)
+
+[(Source)](https://github.com/lupyuen/lupyuen.github.io/blob/master/images/bme280-read.kvdat)
