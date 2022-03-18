@@ -377,12 +377,15 @@ https://github.com/lupyuen/incubator-nuttx/blob/bmp280/drivers/sensors/bmp280.c#
 static uint8_t bmp280_getreg8(FAR struct bmp280_dev_s *priv, uint8_t regaddr)
 {
   ...
-  //// Previously:
-  //// msg[0].flags     = 0;
-
-  #warning Testing: I2C_M_NOSTOP for I2C Sub Address
-  msg[0].flags     = I2C_M_NOSTOP;  ////  Testing I2C Sub Address
-
+  msg[0].frequency = priv->freq;
+  msg[0].addr      = priv->addr;
+#ifdef CONFIG_BL602_I2C0
+  //  For BL602: Register ID must be passed as I2C Sub Address
+  msg[0].flags     = I2C_M_NOSTOP;
+#else
+  //  Otherwise pass Register ID as I2C Data
+  msg[0].flags     = 0;
+#endif  //  CONFIG_BL602_I2C0
   msg[0].buffer    = &regaddr;
   msg[0].length    = 1;
 ```
@@ -396,18 +399,18 @@ static int bmp280_getregs(FAR struct bmp280_dev_s *priv, uint8_t regaddr,
   ...
   msg[0].frequency = priv->freq;
   msg[0].addr      = priv->addr;
-
-  //// Previously:
-  //// msg[0].flags     = 0;
-
-  #warning Testing: I2C_M_NOSTOP for I2C Sub Address
-  msg[0].flags     = I2C_M_NOSTOP;  ////  Testing I2C Sub Address
-
+#ifdef CONFIG_BL602_I2C0
+  //  For BL602: Register ID must be passed as I2C Sub Address
+  msg[0].flags     = I2C_M_NOSTOP;
+#else
+  //  Otherwise pass Register ID as I2C Data
+  msg[0].flags     = 0;
+#endif  //  CONFIG_BL602_I2C0
   msg[0].buffer    = &regaddr;
   msg[0].length    = 1;
 ```
 
-We don't need to set the I2C Sub Address when writing registers...
+We also need to set the I2C Sub Address when writing registers...
 
 https://github.com/lupyuen/incubator-nuttx/blob/bmp280/drivers/sensors/bmp280.c#L286-L300
 
@@ -416,15 +419,27 @@ static int bmp280_putreg8(FAR struct bmp280_dev_s *priv, uint8_t regaddr,
                           uint8_t regval)
 {
   ...
-  txbuffer[0] = regaddr;
-  txbuffer[1] = regval;
-
   msg[0].frequency = priv->freq;
   msg[0].addr      = priv->addr;
+#ifdef CONFIG_BL602_I2C0
+  //  For BL602: Register ID and value must be passed as I2C Sub Address
+  msg[0].flags     = I2C_M_NOSTOP;
+#else
+  //  Otherwise pass Register ID and value as I2C Data
   msg[0].flags     = 0;
+#endif  //  CONFIG_BL602_I2C0
   msg[0].buffer    = txbuffer;
   msg[0].length    = 2;
+
+  //  For BL602: We read I2C Data because this forces BL602 to send the first message correctly
+  msg[1].frequency = priv->freq;
+  msg[1].addr      = priv->addr;
+  msg[1].flags     = I2C_M_READ;
+  msg[1].buffer    = rxbuffer;
+  msg[1].length    = sizeof(rxbuffer);
 ```
+
+We must read after writing the I2C Register ID and value, so that it forces BL602 to write the data.
 
 # BMP280 Driver Loads OK
 
@@ -474,8 +489,8 @@ bmp280_initialize: P8 = 15288
 bmp280_initialize: P9 = 8964
 
 bmp280_putreg8: regaddr=0xf4, regval=0x00
-bl602_i2c_transfer: subflag=0, subaddr=0x0, sublen=0
-bl602_i2c_send_data: count=2, temp=0xf4
+bl602_i2c_transfer: subflag=1, subaddr=0xf4, sublen=2
+bl602_i2c_recvdata: count=1, temp=0x10bdd800
 bl602_i2c_transfer: i2c transfer success
 
 bmp280_getreg8: regaddr=0xf5
@@ -485,8 +500,8 @@ bl602_i2c_transfer: i2c transfer success
 bmp280_getreg8: regaddr=0xf5, regval=0x00
 
 bmp280_putreg8: regaddr=0xf5, regval=0x00
-bl602_i2c_transfer: subflag=0, subaddr=0x0, sublen=0
-bl602_i2c_send_data: count=2, temp=0xf5
+bl602_i2c_transfer: subflag=1, subaddr=0xf5, sublen=2
+bl602_i2c_recvdata: count=1, temp=0x10bdd800
 bl602_i2c_transfer: i2c transfer success
 
 bmp280_getreg8: regaddr=0xf5
@@ -638,8 +653,8 @@ bl602_i2c_transfer: i2c transfer success
 bmp280_getreg8: regaddr=0xf5, regval=0x00
 
 bmp280_putreg8: regaddr=0xf5, regval=0xa0
-bl602_i2c_transfer: subflag=0, subaddr=0x0, sublen=0
-bl602_i2c_send_data: count=2, temp=0xa0f5
+bl602_i2c_transfer: subflag=1, subaddr=0xa0f5, sublen=2
+bl602_i2c_recvdata: count=1, temp=0x10bdd8a0
 bl602_i2c_transfer: i2c transfer success
 
 bmp280_getreg8: regaddr=0xf5
@@ -651,8 +666,8 @@ bmp280_getreg8: regaddr=0xf5, regval=0xa0
 sensor_ioctl: cmd=a82 arg=4201c388
 sensor_ioctl: cmd=a80 arg=00000001
 bmp280_putreg8: regaddr=0xf4, regval=0x2f
-bl602_i2c_transfer: subflag=0, subaddr=0x0, sublen=0
-bl602_i2c_send_data: count=2, temp=0x2ff4
+bl602_i2c_transfer: subflag=1, subaddr=0x2ff4, sublen=2
+bl602_i2c_recvdata: count=1, temp=0x10bdd82f
 bl602_i2c_transfer: i2c transfer success
 
 SensorTest: Test /dev/sensor/baro0 with interval(1000000us), latency(0us)
@@ -749,8 +764,8 @@ baro0: timestamp:20570000 value1:1069.51 value2:30.09
 SensorTest: Received message: baro0, number:10/10
 sensor_ioctl: cmd=a80 arg=00000000
 bmp280_putreg8: regaddr=0xf4, regval=0x00
-bl602_i2c_transfer: subflag=0, subaddr=0x0, sublen=0
-bl602_i2c_send_data: count=2, temp=0xf4
+bl602_i2c_transfer: subflag=1, subaddr=0xf4, sublen=2
+bl602_i2c_recvdata: count=1, temp=0x80000000
 bl602_i2c_transfer: i2c transfer success
 nsh>
 ```
@@ -1142,14 +1157,17 @@ bl602_i2c_recvdata: count=1, temp=0x60
 bl602_i2c_transfer: i2c transfer success
 bme280_reg_read: start=0xd0, size=1, buf[0]=0x60
 bme280_chip_init: ID OK
+
 bme280_reg_write: reg=0xe0, val=0xb6
 bl602_i2c_transfer: subflag=1, subaddr=0xb6e0, sublen=2
 bl602_i2c_recvdata: count=1, temp=0x0
 bl602_i2c_transfer: i2c transfer success
+
 bl602_i2c_transfer: subflag=1, subaddr=0xf3, sublen=1
 bl602_i2c_recvdata: count=1, temp=0x0
 bl602_i2c_transfer: i2c transfer success
 bme280_reg_read: start=0xf3, size=1, buf[0]=0x00
+
 bl602_i2c_transfer: subflag=1, subaddr=0x88, sublen=1
 bl602_i2c_recvdata: count=24, temp=0x65e66e97
 bl602_i2c_recvdata: count=20, temp=0x8f990032
@@ -1158,32 +1176,39 @@ bl602_i2c_recvdata: count=12, temp=0xffdb1e71
 bl602_i2c_recvdata: count=8, temp=0x10bdd80a
 bl602_i2c_transfer: i2c transfer success
 bme280_reg_read: start=0x88, size=24
+
 bl602_i2c_transfer: subflag=1, subaddr=0xa1, sublen=1
 bl602_i2c_recvdata: count=1, temp=0x10bdd84b
 bl602_i2c_transfer: i2c transfer success
 bme280_reg_read: start=0xa1, size=1, buf[0]=0x4b
+
 bl602_i2c_transfer: subflag=1, subaddr=0xe1, sublen=1
 bl602_i2c_recvdata: count=7, temp=0x14000165
 bl602_i2c_recvdata: count=3, temp=0x141e000b
 bl602_i2c_transfer: i2c transfer success
 bme280_reg_read: start=0xe1, size=7
+
 bme280_reg_write: reg=0xf2, val=0x05
 bl602_i2c_transfer: subflag=1, subaddr=0x5f2, sublen=2
 bl602_i2c_recvdata: count=1, temp=0x141e0005
 bl602_i2c_transfer: i2c transfer success
+
 bme280_reg_write: reg=0xf4, val=0x57
 bl602_i2c_transfer: subflag=1,subaddr=0x57f4, sublen=2
 bl602_i2c_recvdata: count=1, temp=0x141e0057
 bl602_i2c_transfer: i2c transfer success
+
 bme280_reg_write: reg=0xf5, val=0xa8
 bl602_i2c_transfer: subflag=1, subaddr=0xa8f5, sublen=2
 bl602_i2c_recvdata: count=1, temp=0x141e00a8
 bl602_i2c_transfer: i2c transfer success
 bme280_chip_init: "BME280" OK
+
 bme280_reg_write: reg=0xf4, val=0x54
 bl602_i2c_transfer: subflag=1, subaddr=0x54f4, sublen=2
 bl602_i2c_recvdata: count=1, temp=0x141e0054
 bl602_i2c_transfer: i2c transfer success
+
 sensor_custom_register: Registering /dev/sensor/baro0
 sensor_custom_register: Registering /dev/sensor/humi0
 bme280_register: BME280 driver loaded successfully!
@@ -1196,39 +1221,48 @@ Here's the detailed log when we read the Barometer Sensor Data from BME280 Drive
 
 ```text
 nsh> sensortest -n 1 baro0
+
 sensor_ioctl: cmd=a81 arg=4201c4b4
 bme280_set_interval_baro: period_us=1000000
 bme280_set_interval_baro: priv=0x4201b800, sensor_baro=0x4201b800
 bme280_set_standby: value=5
+
 bl602_i2c_transfer: subflag=1, subaddr=0xf5, sublen=1
 bl602_i2c_recvdata: count=1, temp=0xcf9400a8
 bl602_i2c_transfer: i2c transfer success
 bme280_reg_read: start=0xf5, size=1, buf[0]=0xa8
+
 bme280_reg_write: reg=0xf5, val=0xa8
 bl602_i2c_transfer: subflag=1, subaddr=0xa8f5, sublen=2
 bl602_i2c_recvdata: count=1, temp=0xcf9400a8
 bl602_i2c_transfer: i2c transfer success
+
 bl602_i2c_transfer: subflag=1, subaddr=0xf5, sublen=1
 bl602_i2c_recvdata: count=1, temp=0xcf9400a8
 bl602_i2c_transfer: i2c transfer success
 bme280_reg_read: start=0xf5, size=1, buf[0]=0xa8
+
 sensor_ioctl: cmd=a82 arg=4201c4b8
 sensor_ioctl: cmd=a80 arg=00000001
 bme280_activate_baro: enable=1
 bme280_activate_baro: priv=0x4201b800, sensor_baro=0x4201b800
+
 bl602_i2c_transfer: subflag=1, subaddr=0xd0, sublen=1
 bl602_i2c_recvdata: count=1, temp=0xcf940060
 bl602_i2c_transfer: i2c transfer success
 bme280_reg_read: start=0xd0, size=1, buf[0]=0x60
 bme280_chip_init: ID OK
+
 bme280_reg_write: reg=0xe0, val=0xb6
 bl602_i2c_transfer: subflag=1, subaddr=0xb6e0, sublen=2
 bl602_i2c_recvdata: count=1, temp=0xcf940000
 bl602_i2c_transfer: i2c transfer success
+
 bl602_i2c_transfer: subflag=1, subaddr=0xf3, sublen=1
 bl602_i2c_recvdata: count=1, temp=0xcf940000
 bl602_i2c_transfer: i2c transfer success
 bme280_reg_read: start=0xf3, size=1, buf[0]=0x00
+
 bl602_i2c_transfer: subflag=1, subaddr=0x88, sublen=1
 bl602_i2c_recvdata: count=24, temp=0x65e66e97
 bl602_i2c_recvdata: count=20, temp=0x8f990032
@@ -1237,55 +1271,67 @@ bl602_i2c_recvdata: count=12, temp=0xffdb1e71
 bl602_i2c_recvdata: count=8, temp=0x10bdd80a
 bl602_i2c_transfer: i2c transfer success
 bme280_reg_read: start=0x88, size=24
+
 bl602_i2c_transfer: subflag=1, subaddr=0xa1, sublen=1
 bl602_i2c_recvdata: count=1, temp=0x10bdd84b
 bl602_i2c_transfer: i2c transfer success
 bme280_reg_read: start=0xa1, size=1, buf[0]=0x4b
+
 bl602_i2c_transfer: subflag=1, subaddr=0xe1, sublen=1
 bl602_i2c_recvdata: count=7, temp=0x14000165
 bl602_i2c_recvdata: count=3, temp=0x141e000b
 bl602_i2c_transfer: i2c transfer success
 bme280_reg_read: start=0xe1, size=7
+
 bme280_reg_write: reg=0xf2, val=0x05
 bl602_i2c_trasfer: subflag=1, subaddr=0x5f2, sublen=2
 bl602_i2c_recvdata: count=1, temp=0x141e0005
 bl602_i2c_transfer: i2c transfer success
+
 bme280_reg_write: reg=0xf4, val=0x57
 bl602_i2c_transfer: subflag=1, subaddr=0x57f4, sublen=2
 bl602_i2c_recvdata: count=1, temp=0x141e0057
 bl602_i2c_transfer: i2c transfer success
+
 bme280_reg_write: reg=0xf5, val=0xa8
 bl602_i2c_transfer: subflag=1, subaddr=0xa8f5, sublen=2
 bl602_i2c_recvdata: count=1, temp=0x141e00a8
 bl602_i2c_transfer: i2c transfer success
 bme280_chip_init: "BME280" OK
+
 SensorTest: Test /dev/sensor/baro0 with interval(1000000us), latency(0us)
 sensor_pollnotify: Report events: 01
 bme280_fetch_baro: buflen=16
 bme280_fetch_baro: priv=0x4201b800, sensor_baro=0x4201b800
+
 bl602_i2c_transfer: subflag=1, subaddr=0xf3, sublen=1
 bl602_i2c_recvdata: count=1, temp=0x141e000c
 bl602_i2c_transfer: i2c transfer success
 bme280_reg_read: start=0xf3, size=1, buf[0]=0x0c
+
 bl602_i2c_transfer: subflag=1, subaddr=0xf3, sublen=1
 bl602_i2c_recvdata: count=1, temp=0x141e000c
 bl602_i2c_transfer: i2c transfer success
 bme280_reg_read: start=0xf3, size=1, buf[0]=0x0c
+
 bl602_i2c_transfer: subflag=1, subaddr=0xf3, sublen=1
 bl602_i2c_recvdata: count=1, temp=0x141e0004
 bl602_i2c_transfer: i2c transfer success
 bme280_reg_read: start=0xf3, size=1, buf[0]=0x04
+
 bl602_i2c_transfer: subflag=1, subaddr=0xf7, sublen=1
 bl602_i2c_recvdata: count=8, temp=0x8530af51
 bl602_i2c_recvdata: count=4, temp=0x61940024
 bl602_i2c_transfer: i2c transfer success
 bme280_reg_read: start=0xf7, size=8
+
 bme280_fetch: temperature=28.730000 °C, pressure=981.339661 mbar, humidity=93.127930 %
 baro0: timestamp:256220000 value1:981.34 value2:28.73
 SensorTest: Received message: baro0, number:1/1
 sensor_ioctl: cmd=a80 arg=00000000
 bme280_activate_baro: enable=0
 bme280_activate_baro: priv=0x4201b800, sensor_baro=0x4201b800
+
 bme280_reg_write: reg=0xf4, val=0x54
 bl602_i2c_transfer: subflag=1, subaddr=0x54f4, sublen=2
 bl602_i2c_recvdata: count=1, temp=0x61940054
@@ -1296,31 +1342,38 @@ Here's the detailed log when we read the Humidity Sensor Data from BME280 Driver
 
 ```text
 nsh> sensortest -n 1 humi0
+
 sensor_ioctl: cmd=a81 arg=4201c4b4
 bme280_set_interval_humi: period_us=1000000
 bme280_set_interval_humi: priv=0x4201b800, sensor_humi=0x4201b81c
 bme280_set_standby: value=5
+
 bl602_i2c_transfer: subflag=1, subaddr=0xf5, sublen=1
 bl602_i2c_recvdata: count=1, temp=0x619400a8
 bl602_i2c_transfer: i2c transfer success
 bme280_reg_read: start=0xf5, size=1, buf[0]=0xa8
+
 bme280_reg_write: reg=0xf5, val=0xa8
 bl602_i2c_transfer: subflag=1, subaddr=0xa8f5, sublen=2
 bl602_i2c_recvdata: cunt=1, temp=0x619400a8
 bl602_i2c_transfer: i2c transfer success
+
 bl602_i2c_transfer: subflag=1, subaddr=0xf5, sublen=1
 bl602_i2c_recvdata: count=1, temp=0x619400a8
 bl602_i2c_transfer: i2c transfer success
 bme280_reg_read: start=0xf5, size=1, buf[0]=0xa8
+
 sensor_ioctl: cmd=a82 arg=4201c4b8
 sensor_ioctl: cmd=a80 arg=00000001
 bme280_activate_humi: enable=1
 bme280_activate_humi: priv=0x4201b800, sensor_humi=0x4201b81c
+
 bl602_i2c_transfer: subflag=1, subaddr=0xd0, sublen=1
 bl602_i2c_recvdata: count=1, temp=0x61940060
 bl602_i2c_transfer: i2c transfer success
 bme280_reg_read: start=0xd0, size=1, buf[0]=0x60
 bme280_chip_init: ID OK
+
 bme280_reg_write: reg=0xe0, val=0xb6
 bl602_i2c_transfer: subflag=1, subaddr=0xb6e0, sublen=2
 bl602_i2c_recvdata: count=1, temp=0x61940000
@@ -1328,6 +1381,7 @@ bl602_i2c_transfer: i2c transfer success
 bl602_i2c_transfer: subflag=1, subaddr=0xf3, sublen=1
 bl602_i2c_recvdata: count=1, temp=0x61940000
 bl602_i2c_transfer: i2c transfer success
+
 bme280_reg_read: start=0xf3, size=1, buf[0]=0x00
 bl602_i2c_transfer: subflag=1, subaddr=0x88, sublen=1
 bl602_i2c_recvdata: count=24, temp=0x65e66e97
@@ -1337,55 +1391,67 @@ bl602_i2c_recvdata: count=12, temp=0xffdb1e71
 bl602_i2c_recvdata: count=8, temp=0x10bdd80a
 bl602_i2c_transfer: i2c transfer success
 bme280_reg_read: start=0x88, size=24
+
 bl602_i2c_transfer: subflag=1, subaddr=0xa1, sublen=1
 bl602_i2c_recvdata: count=1, temp=0x10bdd84b
 bl602_i2c_transfer: i2c transfer success
 bme280_reg_read: start=0xa1, size=1, buf[0]=0x4b
+
 bl602_i2c_transfer: subflag=1, subaddr=0xe1, sublen=1
 bl602_i2c_recvdata: count=7, temp=0x14000165
 bl602_i2c_recvdata: count=3, temp=0x141e000b
 bl02_i2c_transfer: i2c transfer success
 bme280_reg_read: start=0xe1, size=7
+
 bme280_reg_write: reg=0xf2, val=0x05
 bl602_i2c_transfer: subflag=1, subaddr=0x5f2, sublen=2
 bl602_i2c_recvdata: count=1, temp=0x141e0005
 bl602_i2c_transfer: i2c transfer success
+
 bme280_reg_write: reg=0xf4, val=0x57
 bl602_i2c_transfer: subflag=1, subaddr=0x57f4, sublen=2
 bl602_i2c_recvdata: count=1, temp=0x141e0057
 bl602_i2c_transfer: i2c transfer success
+
 bme280_reg_write: reg=0xf5, val=0xa8
 bl602_i2c_transfer: subflag=1, subaddr=0xa8f5, sublen=2
 bl602_i2c_recvdata: count=1, temp=0x141e00a8
 bl602_i2c_transfer: i2c transfer success
 bme280_chip_init: "BME280" OK
+
 SensorTest: Test /dev/sensor/humi0 with interval(1000000us), latency(0us)
 sensor_pollnotify: Report events: 01
 bme280_fetch_humi: buflen=16
 bme280_fetch_humi: priv=0x4201b800, sensor_humi=0x4201b81c
+
 bl602_i2c_transfer: subflag=1, subaddr=0xf3, sublen=1
 bl602_i2c_recvdata: count=1, temp=0x141e000c
 bl602_i2c_transfer: i2c transfer success
 bme280_reg_read: start=0xf3, size=1, buf[0]=0x0c
+
 bl602_i2c_transfer: subflag=1, subaddr=0xf3, sublen=1
 bl602_i2c_recvdata: count=1, temp=0x141e000c
 bl602_i2c_transfer: i2c transfer success
 bme280_reg_read: start=0xf3, size=1, buf[0]=0x0c
+
 bl602_i2c_transfer: subflag=1, subaddr=0xf3, sublen=1
 bl602_i2c_recvdata: count=1, temp=0x141e0004
 bl602_i2c_transfer: i2c transfer success
 bme280_reg_read: start=0xf3, size=1, buf[0]=0x04
+
 bl602_i2c_transfer: subflag=1, subaddr=0xf7, sublen=1
 bl602_i2c_recvdata: count=8, temp=0x85b0a451
 l602_i2c_recvdata: count=4, temp=0x3b94000d
 bl602_i2c_transfer: i2c transfer success
 bme280_reg_read: start=0xf7, size=8
+
 bme280_fetch: temperature=28.610001 °C, pressure=1028.345703 mbar, humidity=92.896484 %
 humi0: timestamp:553560000 value:92.90
 SensorTest: Received message: humi0, number:1/1
 sensor_ioctl: cmd=a80 arg=00000000
 bme280_activate_humi: enable=0
 bme280_activate_humi: priv=0x4201b800, sensor_humi=0x4201b81c
+
 bme280_reg_write: reg=0xf4, val=0x54
 bl602_i2c_transfer: subflag=1, subaddr=0x54f4, sublen=2
 bl602_i2c_recvdata: count=1, temp=0x3b940054
@@ -1396,9 +1462,9 @@ bl602_i2c_transfer: i2c transfer success
 
 Here's the Logic Analyser Output when BME280 Driver loads during startup...
 
-![Top Half](https://lupyuen.github.io/images/bme280-boot1.png)
+![Top](https://lupyuen.github.io/images/bme280-boot1.png)
 
-![Bottom Half](https://lupyuen.github.io/images/bme280-boot2.png)
+![Bottom](https://lupyuen.github.io/images/bme280-boot2.png)
 
 Here's the Logic Analyser Output when we read the Sensor Data from BME280 Driver...
 
