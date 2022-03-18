@@ -92,6 +92,29 @@ int bl602_bringup(void) {
 #endif /* CONFIG_SENSORS_BME280 */
 ```
 
+To read the BME280 Sensor, enter this at the NuttX Shell...
+
+```text
+nsh> ls /dev/sensor
+/dev/sensor:
+ baro0
+ humi0
+
+nsh> sensortest -n 1 baro0
+SensorTest: Test /dev/sensor/baro0 with interval(1000000us), latency(0us)
+baro0: timestamp:256220000 value1:981.34 value2:28.73
+SensorTest: Received message: baro0, number:1/1
+
+nsh> sensortest -n 1 humi0
+SensorTest: Test /dev/sensor/humi0 with interval(1000000us), latency(0us)
+humi0: timestamp:553560000 value:92.90
+SensorTest: Received message: humi0, number:1/1
+```
+
+That's 981.34 millibars, 28.73 degrees Celsius, and 92.90 % relative humidity.
+
+The rest of this doc explains how we ported the BME280 Driver from Zephyr OS to NuttX RTOS.
+
 # Test with Bus Pirate
 
 [__Bus Pirate__](http://dangerousprototypes.com/docs/Bus_Pirate) is a useful gadget for verifying whether our BME280 Sensor works OK. And for checking the I2C bytes that should be sent down the wire to BME280.
@@ -525,7 +548,6 @@ baro0: timestamp:30690000 value1:674.93 value2:22.18
 baro0: timestamp:30690000 value1:1006.21 value2:30.78
 baro0: timestamp:30690000 value1:1006.21 value2:30.78
 SensorTest: Received message: baro0, number:10/10
-bl602_i2c_transfer: i2c transfer error, event = 4
 
 nsh> sensortest -n 10 baro0
 SensorTest: Test /dev/sensor/baro0 with interval(1000000us), latency(0us)
@@ -540,7 +562,6 @@ baro0: timestamp:61300000 value1:1006.27 value2:30.80
 baro0: timestamp:61310000 value1:1006.27 value2:30.80
 baro0: timestamp:61310000 value1:1006.27 value2:30.80
 SensorTest: Received message: baro0, number:10/10
-bl602_i2c_transfer: i2c transfer error, event = 4
 
 nsh> sensortest -n 10 baro0
 SensorTest: Test /dev/sensor/baro0 with interval(1000000us), latency(0us)
@@ -1011,626 +1032,6 @@ https://github.com/lupyuen/bme280-nuttx/pull/1/files#diff-e13ff0ab44de7ead31a3dd
 
 The above files are wrapped by [bundle.c](bundle.c) and [bundle.h](bundle.h) to become a NuttX Driver.
 
-# Output Log
-
-Zephyr BME280 Driver ported to Apache #NuttX OS ... Works great on NuttX! 🎉
-
-```text
-spi_test_driver_register: devpath=/dev/spitest0, spidev=0
-bme280_register: devno=0
-bme280_reg_read: start=0xd0, size=1
-bme280_chip_init: ID OK
-bme280_reg_write: reg=0xe0, val=0xb6
-bme280_reg_read: start=0xf3, size=1
-bme280_reg_read: start=0x88, size=24
-bme280_reg_read: start=0xa1, size=1
-bme280_reg_read: start=0xe1, size=7
-bme280_reg_write: reg=0xf2, val=0x05
-bme280_reg_write: reg=0xf4, val=0x57
-bme280_reg_write: reg=0xf5, val=0xa8
-bme280_chip_init: "BME280" OK
-bme280_reg_write: reg=0xf4, val=0x54
-bl602_i2c_transfer: i2c transfer error, event = 4
-sensor_custom_register: Registering /dev/sensor/baro0
-bme280_register: BME280 driver loaded successfully!
-
-NuttShell (NSH) NuttX-10.2.0-RC0
-nsh> sensortest -n 10 baro0
-sensor_ioctl: cmd=a81 arg=4201c394
-bme280_set_interval: period_us=1107411860
-bme280_set_standby: value=5
-bme280_reg_read: start=0xf5, size=1
-bme280_reg_write: reg=0xf5, val=0xa8
-bme280_reg_read: start=0xf5, size=1
-sensor_ioctl: cmd=a82 arg=4201c398
-sensor_ioctl: cmd=a80 arg=00000001
-bme280_activate: enable=1
-bme280_reg_read: start=0xd0, size=1
-bme280_chip_init: ID OK
-bme280_reg_write: reg=0xe0, val=0xb6
-bme280_reg_read: start=0xf3, size=1
-bme280_reg_read: start=0x88, size=24
-bme280_reg_read: start=0xa1, size=1
-bme280_reg_read: start=0xe1, size=7
-bme280_reg_write: reg=0xf2, val=0x05
-bme280_reg_write: reg=0xf4, val=0x57
-bme280_reg_write: reg=0xf5, val=0xa8
-bme280_chip_init: "BME280" OK
-SensorTest: Test /dev/sensor/baro0 with interval(1000000us), latency(0us)
-sensor_pollnotify: Report events: 01
-bme280_fetch: buflen=16
-bme280_reg_read: start=0xf3, size=1
-bme280_reg_read: start=0xf3, size=1
-bme280_reg_read: start=0xf3, size=1
-bme280_reg_read: start=0xf7, size=8
-bme280_fetch: temperature=29.620001 °C, pressure=1010.603760 mbar, humidity=88.342773 %
-baro0: timestamp:21140000 value1:1010.60 value2:29.62
-sensor_pollnotify: Report events: 01
-bme280_fetch: buflen=16
-bme280_reg_read: start=0xf3, size=1
-bme280_reg_read: start=0xf7, size=8
-bme280_fetch: temperature=29.620001 °C, pressure=1010.603760 mbar, humidity=88.342773 %
-baro0: timestamp:21160000 value1:1010.60 value2:29.62
-sensor_pollnotify: Report events: 01
-bme280_fetch: buflen=16
-bme280_reg_read: start=0xf3, size=1
-bme280_reg_read: start=0xf7, size=8
-bme280_fetch: temperature=29.620001 °C, pressure=1010.603760 mbar, humidity=88.342773 %
-baro0: timestamp:21180000 value1:1010.60 value2:29.62
-sensor_pollnotify: Report events: 01
-bme280_fetch: buflen=16
-bme280_reg_read: start=0xf3, size=1
-bme280_reg_read: start=0xf7, size=8
-bme280_fetch: temperature=29.620001 °C, pressure=1010.603760 mbar, humidity=88.342773 %
-baro0: timestamp:21200000 value1:1010.60 value2:29.62
-sensor_pollnotify: Report events: 01
-bme280_fetch: buflen=16
-bme280_reg_read: start=0xf3, size=1
-bme280_reg_read: start=0xf7, size=8
-bme280_fetch: temperature=29.620001 °C, pressure=1010.603760 mbar, humidity=88.342773 %
-baro0: timestamp:21220000 value1:1010.60 value2:29.62
-sensor_pollnotify: Report events: 01
-bme280_fetch: buflen=16
-bme280_reg_read: start=0xf3, size=1
-bme280_reg_read: start=0xf7, size=8
-bme280_fetch: temperature=29.620001 °C, pressure=1010.603760 mbar, humidity=88.342773 %
-baro0: timestamp:21240000 value1:1010.60 value2:29.62
-sensor_pollnotify: Report events: 01
-bme280_fetch: buflen=16
-bme280_reg_read: start=0xf3, size=1
-bme280_reg_read: start=0xf7, size=8
-bme280_fetch: temperature=29.620001 °C, pressure=1010.603760 mbar, humidity=88.342773 %
-baro0: timestamp:21260000 value1:1010.60 value2:29.62
-sensor_pollnotify: Report events: 01
-bme280_fetch: buflen=16
-bme280_reg_read: start=0xf3, size=1
-bme280_reg_read: start=0xf7, size=8
-bme280_fetch: temperature=29.620001 °C, pressure=1010.603760 mbar, humidity=88.342773 %
-baro0: timestamp:21280000 value1:1010.60 value2:29.62
-sensor_pollnotify: Report events: 01
-bme280_fetch: buflen=16
-bme280_reg_read: start=0xf3, size=1
-bme280_reg_read: start=0xf7, size=8
-bme280_fetch: temperature=29.620001 °C, pressure=1010.603760 mbar, humidity=88.342773 %
-baro0: timestamp:21300000 value1:1010.60 value2:29.62
-sensor_pollnotify: Report events: 01
-bme280_fetch: buflen=16
-bme280_reg_read: start=0xf3, size=1
-bme280_reg_read: start=0xf7, size=8
-bme280_fetch: temperature=29.620001 °C, pressure=1010.603760 mbar, humidity=88.342773 %
-baro0: timestamp:21320000 value1:1010.60 value2:29.62
-SensorTest: Received message: baro0, number:10/10
-sensor_ioctl: cmd=a80 arg=00000000
-bme280_activate: enable=0
-bme280_reg_write: reg=0xf4, val=0x54
-bl602_i2c_transfer: i2c transfer error, event = 4
-
-nsh> sensortest -n 10 baro0
-sensor_ioctl: cmd=a81 arg=4201c394
-bme280_set_interval: period_us=1107411860
-bme280_set_standby: value=5
-bme280_reg_read: start=0xf5, size=1
-bme280_reg_write: reg=0xf5, val=0xa8
-bme280_reg_read: start=0xf5, size=1
-sensor_ioctl: cmd=a82 arg=4201c398
-sensor_ioctl: cmd=a80 arg=00000001
-bme280_activate: enable=1
-bme280_reg_read: start=0xd0, size=1
-bme280_chip_init: ID OK
-bme280_reg_write: reg=0xe0, val=0xb6
-bme280_reg_read: start=0xf3, size=1
-bme280_reg_read: start=0x88, size=24
-bme280_reg_read: start=0xa1, size=1
-bme280_reg_read: start=0xe1, size=7
-bme280_reg_write: reg=0xf2, val=0x05
-bme280_reg_write: reg=0xf4, val=0x57
-bme280_reg_write: reg=0xf5, val=0xa8
-bme280_chip_init: "BME280" OK
-SensorTest: Test /dev/sensor/baro0 with interval(1000000us), latency(0us)
-sensor_pollnotify: Report events: 01
-bme280_fetch: buflen=16
-bme280_reg_read: start=0xf3, size=1
-bme280_reg_read: start=0xf3, size=1
-bme280_reg_read: start=0xf3, size=1
-bme280_reg_read: start=0xf7, size=8
-bme280_fetch: temperature=29.650000 °C, pressure=1010.595825 mbar, humidity=88.250000 %
-baro0: timestamp:25440000 value1:1010.60 value2:29.65
-sensor_pollnotify: Report events: 01
-bme280_fetch: buflen=16
-bme280_reg_read: start=0xf3, size=1
-bme280_reg_read: start=0xf7, size=8
-bme280_fetch: temperature=29.650000 °C, pressure=1010.595825 mbar, humidity=88.250000 %
-baro0: timestamp:25460000 value1:1010.60 value2:29.65
-sensor_pollnotify: Report events: 01
-bme280_fetch: buflen=16
-bme280_reg_read: start=0xf3, size=1
-bme280_reg_read: start=0xf7, size=8
-bme280_fetch: temperature=29.650000 °C, pressure=1010.595825 mbar, humidity=88.250000 %
-baro0: timestamp:25480000 value1:1010.60 value2:29.65
-sensor_pollnotify: Report events: 01
-bme280_fetch: buflen=16
-bme280_reg_read: start=0xf3, size=1
-bme280_reg_read: start=0xf7, size=8
-bme280_fetch: temperature=29.650000 °C, pressure=1010.595825 mbar, humidity=88.250000 %
-baro0: timestamp:25500000 value1:1010.60 value2:29.65
-sensor_pollnotify: Report events: 01
-bme280_fetch: buflen=16
-bme280_reg_read: start=0xf3, size=1
-bme280_reg_read: start=0xf7, size=8
-bme280_fetch: temperature=29.650000 °C, pressure=1010.595825 mbar, humidity=88.250000 %
-baro0: timestamp:25520000 value1:1010.60 value2:29.65
-sensor_pollnotify: Report events: 01
-bme280_fetch: buflen=16
-bme280_reg_read: start=0xf3, size=1
-bme280_reg_read: start=0xf7, size=8
-bme280_fetch: temperature=29.650000 °C, pressure=1010.595825 mbar, humidity=88.250000 %
-baro0: timestamp:25540000 value1:1010.60 value2:29.65
-sensor_pollnotify: Report events: 01
-bme280_fetch: buflen=16
-bme280_reg_read: start=0xf3, size=1
-bme280_reg_read: start=0xf7, size=8
-bme280_fetch: temperature=29.650000 °C, pressure=1010.595825 mbar, humidity=88.250000 %
-baro0: timestamp:25560000 value1:1010.60 value2:29.65
-sensor_pollnotify: Report events: 01
-bme280_fetch: buflen=16
-bme280_reg_read: start=0xf3, size=1
-bme280_reg_read: start=0xf7, size=8
-bme280_fetch: temperature=29.650000 °C, pressure=1010.595825 mbar, humidity=88.250000 %
-baro0: timestamp:25580000 value1:1010.60 value2:29.65
-sensor_pollnotify: Report events: 01
-bme280_fetch: buflen=16
-bme280_reg_read: start=0xf3, size=1
-bme280_reg_read: start=0xf7, size=8
-bme280_fetch: temperature=29.650000 °C, pressure=1010.595825 mbar, humidity=88.250000 %
-baro0: timestamp:25600000 value1:1010.60 value2:29.65
-sensor_pollnotify: Report events: 01
-bme280_fetch: buflen=16
-bme280_reg_read: start=0xf3, size=1
-bme280_reg_read: start=0xf7, size=8
-bme280_fetch: temperature=29.650000 °C, pressure=1010.595825 mbar, humidity=88.250000 %
-baro0: timestamp:25620000 value1:1010.60 value2:29.65
-SensorTest: Received message: baro0, number:10/10
-sensor_ioctl: cmd=a80 arg=00000000
-bme280_activate: enable=0
-bme280_reg_write: reg=0xf4, val=0x54
-bl602_i2c_transfer: 2c transfer error, event = 4
-
-nsh> sensortest -n 10 baro0
-sensor_ioctl: cmd=a81 arg=4201c394
-bme280_set_interval: period_us=1107411860
-bme280_set_standby: value=5
-bme280_reg_read: start=0xf5, size=1
-bme280_reg_write: reg=0xf5, val=0xa8
-bme280_reg_read: start=0xf5, size=1
-sensor_ioctl: cmd=a82 arg=4201c398
-sensor_ioctl: cmd=a80 arg=00000001
-bme280_activate: enable=1
-bme280_reg_read: start=0xd0, size=1
-bme280_chip_init: ID OK
-bme280_reg_write: reg=0xe0, val=0xb6
-bme280_reg_read: start=0xf3, size=1
-bme280_reg_read: start=0x88, size=24
-bme280_reg_read: start=0xa1, size=1
-bme280_reg_read: start=0xe1, size=7
-bme280_reg_write: reg=0xf2, val=0x05
-bme280_reg_write: reg=0xf4, val=0x57
-bme280_reg_write: reg=0xf5, val=0xa8
-bme280_chip_init: "BME280" OK
-SensorTest: Test /dev/sensor/baro0 with interval(1000000us), latency(0us)
-sensor_pollnotify: Report events: 01
-bme280_fetch: buflen=16
-bme280_reg_read: start=0xf3, size=1
-bme280_reg_read: start=0xf3, size=1
-bme280_reg_read: start=0xf3, size=1
-bme280_reg_read: start=0xf7, size=8
-bme280_fetch: temperature=29.660000 °C, pressure=1010.583862 mbar, humidity=88.229492 %
-baro0: timestamp:27510000 value1:1010.58 value2:29.66
-sensor_pollnotify: Report events: 01
-bme280_fetch: buflen=16
-bme280_reg_read: start=0xf3, size=1
-bme280_reg_read: start=0xf7, size=8
-bme280_fetch: temperature=29.660000 °C, pressure=1010.583862 mbar, humidity=88.229492 %
-baro0: timestamp:27530000 value1:1010.58 value2:29.66
-sensor_pollnotify: Report events: 01
-bme280_fetch: buflen=16
-bme280_reg_read: start=0xf3, size=1
-bme280_reg_read: start=0xf7, size=8
-bme280_fetch: temperature=29.660000 °C, pressure=1010.583862 mbar, humidity=88.229492 %
-baro0: timestamp:27550000 value1:1010.58 value2:29.66
-sensor_pollnotify: Report events: 01
-bme280_fetch: buflen=16
-bme280_reg_read: start=0xf3, size=1
-bme280_reg_read: start=0xf7, size=8
-bme280_fetch: temperature=29.660000 °C, pressure=1010.583862 mbar, humidity=88.229492 %
-baro0: timestamp:27570000 value1:1010.58 value2:29.66
-sensor_pollnotify: Report events: 01
-bme280_fetch: buflen=16
-bme280_reg_read: start=0xf3, size=1
-bme280_reg_read: start=0xf7, size=8
-bme280_fetch: temperature=29.660000 °C, pressure=1010.583862 mbar, humidity=88.229492 %
-baro0: timestamp:27590000 value1:1010.58 value2:29.66
-sensor_pollnotify: Report events: 01
-bme280_fetch: buflen=16
-bme280_reg_read: start=0xf3, size=1
-bme280_reg_read: start=0xf7, size=8
-bme280_fetch: temperature=29.660000 °C, pressure=1010.583862 mbar, humidity=88.229492 %
-baro0: timestamp:27610000 value1:1010.58 value2:29.66
-sensor_pollnotify: Report events: 01
-bme280_fetch: buflen=16
-bme280_reg_read: start=0xf3, size=1
-bme280_reg_read: start=0xf7, size=8
-bme280_fetch: temperature=29.660000 °C, pressure=1010.583862 mbar, humidity=88.229492 %
-baro0: timestamp:27630000 value1:1010.58 value2:29.66
-sensor_pollnotify: Report events: 01
-bme280_fetch: buflen=16
-bme280_reg_read: start=0xf3, size=1
-bme280_reg_read: start=0xf7, size=8
-bme280_fetch: temperature=29.660000 °C, pressure=1010.583862 mbar, humidity=88.229492 %
-baro0: timestamp:27650000 value1:1010.58 value2:29.66
-sensor_pollnotify: Report events: 01
-bme280_fetch: buflen=16
-bme280_reg_read: start=0xf3, size=1
-bme280_reg_read: start=0xf7, size=8
-bme280_fetch: temperature=29.660000 °C, pressure=1010.583862 mbar, humidity=88.229492 %
-baro0: timestamp:27670000 value1:1010.58 value2:29.66
-sensor_pollnotify: Report events: 01
-bme280_fetch: buflen=16
-bme280_reg_read: start=0xf3, size=1
-bme280_reg_read: start=0xf7, size=8
-bme280_fetch: temperature=29.660000 °C, pressure=1010.583862 mbar, humidity=88.229492 %
-baro0: timestamp:27690000 value1:1010.58 value2:29.66
-SensorTest: Received message: baro0, number:10/10
-sensor_ioctl: cmd=a80 arg=00000000
-bme280_activate: enable=0
-bme280_reg_write: reg=0xf4, val=0x54
-bl602_i2c_transfer: i2c transfer error, event = 4
-nsh>
-```
-
-Detailed Log:
-
-```text
-gpio_pin_register: Registering /dev/gpio0
-gpio_pin_register: Registering /dev/gpio1
-gpint_enable: Disable the interrupt
-gpio_pin_register: Registering /dev/gpio2
-bl602_gpio_set_intmod: ****gpio_pin=115, int_ctlmod=1, int_trgmod=0
-bl602_spi_setfrequency: frequency=400000, actual=0
-bl602_spi_setbits: nbits=8
-bl602_spi_setmode: mode=0
-spi_test_driver_register: devpath=/dev/spitest0, spidev=0
-bl602_spi_select: devid: 0, CS: free
-bme280_reg_read: start=0xd0, size=1
-bl602_i2c_transfer: subflag=1, subaddr=0xd0, sublen=1
-bl602_i2c_recvdata: count=1, temp=0x60
-bl602_i2c_transfer: i2c transfer success
-bme280_chip_init: ID OKbme280_reg_write: reg=0xe0, val=0xb6
-bl602_i2c_transfer: subflag=0, subaddr=0x0, sublen=0
-bl602_i2c_send_data: count=2, temp=0xb6e0
-bl602_i2c_transfer: i2c transfer success
-bme280_reg_read: start=0xf3, size=1
-bl602_i2c_transfer: subflag=1, subaddr=0xf3, sublen=1
-bl602_i2c_recvdata: count=1, temp=0x0
-bl602_i2c_transfer: i2c transfer success
-bme280_reg_read: start=0x88, size=24
-bl602_i2c_transfer: subflag=1, subaddr=0x88, sublen=1
-bl602_i2c_recvdata: count=24, temp=0x65e66e97
-bl602_i2c_recvdata: count=20, temp=0x8f990032
-bl602_i2c_recvdata: count=16, temp=0xbd0d581
-bl602_i2c_recvdata: count=12, temp=0xffdb1e71
-bl602_i2c_recvdata: count=8, temp=0x26acfff9
-bl602_i2c_transfer: i2c transfer success
-bme280_reg_read: start=0xa1, size=1
-bl602_i2c_transfer: subflag=1, subaddr=0xa1, sublen=1
-bl602_i2c_recvdata: count=1, temp=0x10bdd84b
-bl602_i2c_transfer: i2c transfer success
-bme280_reg_read: start=0xe1, size=7
-bl602_i2c_transfer: subflag=1, subaddr=0xe1, sublen=1
-bl602_i2c_recvdata: count=7, temp=0x14000165
-bl602_i2c_recvdata: count=3, temp=0x141e000b
-bl602_i2c_transfer: i2c transfer success
-bme280_reg_write: reg=0xf2, val=0x05
-bl602_i2c_transfer: subflag=0, subaddr=0x0, sublen=0
-bl602_i2c_send_data: count=2, temp=0x5f2
-bl602_i2c_transfer: i2c transfer success
-bme280_reg_write: reg=0xf4, val=0x57
-bl602_i2c_transfer: subflag=0, subaddr=0x0, sublen=0
-bl602_i2c_send_data: count=2, temp=0x57f4
-bl602_i2c_transfer: i2c transfer success
-bme280_reg_write: reg=0xf5, val=0xa8
-bl602_i2c_transfer: subflag=0, subaddr=0x0, sublen=0
-bl602_i2c_send_data: count=2, temp=0xa8f5
-bl602_i2c_transfer: i2c transfer success
-bme280_chip_init: "BME280" OKsensor_custom_register: Registering /dev/sensor/baro0
-bme280_register: BME280 driver loaded successfully!
-
-NuttShell (NSH) NuttX-10.2.0-RC0
-nsh> sensortest -n 10 baro0
-sensor_ioctl: cmd=a81 arg=4201c394
-bme280_set_interval: TODO period_us=1107411860
-bme280_set_standby: TODO value=5
-sensor_ioctl: cmd=a82 arg=4201c398
-sensor_ioctl: cmd=a80 arg=00000001
-bme280_activate: TODO enable=1
-SensorTest: Test /dev/sensor/baro0 with interval(1000000us), latency(0us)
-sensor_pollnotify: Report events: 01
-bme280_reg_read: start=0xf3, size=1
-bl602_i2c_transfer: subflag=1, subaddr=0xf3, sublen=1
-bl602_i2c_recvdata: count=1, temp=0x141e0000
-bl602_i2c_transfer: i2c transfer success
-bme280_reg_read: start=0xf7, size=8
-bl602_i2c_transfer: subflag=1, subaddr=0xf7, sublen=1
-bl602_i2c_recvdata: count=8, temp=0x86604d52
-bl602_i2c_recvdata: count=4, temp=0x2a8f503a
-bl602_i2c_transfer: i2c transfer success
-bme280_fetch: temperature=30.110001 °C, pressure=106.937820 mbar, humidity=86.075195 %
-baro0: timestamp:38390000 value1:106.94 value2:30.11
-sensor_pollnotify: Report events: 01
-bme280_reg_read: start=0xf3, size=1
-bl602_i2c_transfer: subflag=1, subaddr=0xf3, sublen=1
-bl602_i2c_recvdata: count=1, temp=0x2a8f5000
-bl602_i2c_transfer: i2c transfer success
-bme280_reg_read: start=0xf7, size=8
-bl602_i2c_transfer: subflag=1, subaddr=0xf7, sublen=1
-bl602_i2c_recvdata: count=8, temp=0x86604d52
-bl602_i2c_recvdata: count=4, temp=0x2a8f503a
-bl602_i2c_transfer: i2c transfer success
-bme280_fetch: temperature=30.110001 °C, pressure=106.937820 mbar, humidity=86.075195 %
-baro0: timestamp:38410000 value1:106.94 value2:30.11
-sensor_pollnotify: Report events: 01
-bme280_reg_read: start=0xf3, size=1
-bl602_i2c_transfer: subflag=1, subaddr=0xf3, sublen=1
-bl602_i2c_recvdata: count=1, temp=0x2a8f5000
-bl602_i2c_transfer: i2c transfer success
-bme280_reg_read: start=0xf7, size=8
-bl602_i2c_transfer: subflag=1, subaddr=0xf7, sublen=1
-bl602_i2c_recvdata: count=8, temp=0x86604d52
-bl602_i2c_recvdata: count=4, temp=0x2a8f503a
-bl602_i2c_transfer: i2c transfer success
-bme280_fetch: temperature=30.110001 °C, pressure=106.937820 mbar, humidity=86.075195 %
-baro0: timestamp:38430000 value1:106.94 value2:30.11
-sensor_pollnotify: Report events: 01
-bme280_reg_read: start=0xf3, size=1
-bl602_i2c_transfer: subflag=1, subaddr=0xf3, sublen=1
-bl602_i2c_recvdata: count=1, temp=0x2a8f5000
-bl602_i2c_transfer: i2c transfer success
-bme280_reg_read: start=0xf7, size=8
-bl602_i2c_transfer: subflag=1, subaddr=0xf7, sublen=1
-bl602_i2c_recvdata: count=8, temp=0x86604d52
-bl602_i2c_recvdata: count=4, temp=0x2a8f503a
-bl602_i2c_transfer: i2c transfer success
-bme280_fetch: temperature=30.110001 °C, pressure=106.937820 mbar, humidity=86.075195 %
-baro0: timestamp:38450000 value1:106.94 value2:30.11
-sensor_pollnotify: Report events: 01
-bme280_reg_read: start=0xf3, size=1
-bl602_i2c_transfer: subflag=1, subaddr=0xf3, sublen=1
-bl602_i2c_recvdata: count=1, temp=0x2a8f5000
-bl602_i2c_transfer: i2c transfer success
-bme280_reg_read: start=0xf7, size=8
-bl602_i2c_transfer: subflag=1, subaddr=0xf7, sublen=1
-bl602_i2c_recvdata: count=8, temp=0x86604d52
-bl602_i2c_recvdata: count=4, temp=0x2a8f503a
-bl602_i2c_transfer: i2c transfer success
-bme280_fetch: temperature=30.110001 °C, pressure=106.937820 mbar, humidity=86.075195 %
-baro0: timestamp:38470000 value1:106.94 value2:30.11
-sensor_pollnotify: Report events: 01
-bme280_reg_read: start=0xf3, size=1
-bl602_i2c_transfer: subflag=1, subaddr=0xf3, sublen=1
-bl602_i2c_recvdata: count=1, temp=0x2a8f5000
-bl602_i2c_transfer: i2c transfer success
-bme280_reg_read: start=0xf7, size=8
-bl602_i2c_transfer: subflag=1, subaddr=0xf7, sublen=1
-bl602_i2c_recvdata: count=8, temp=0x86604d52
-bl602_i2c_recvdata: count=4, temp=0x2a8f503a
-bl602_i2c_transfer: i2c transfer success
-bme280_fetch: temperature=30.110001 °C, pressure=106.937820 mbar, humidity=86.075195 %
-baro0: timestamp:38490000 value1:106.94 value2:30.11
-sensor_pollnotify: Report events: 01
-bme280_reg_read: start=0xf3, size=1
-bl602_i2c_transfer: subflag=1, subaddr=0xf3, sublen=1
-bl602_i2c_recvdata: count=1, temp=0x2a8f5000
-bl602_i2c_transfer: i2c transfer success
-bme280_reg_read: start=0xf7, size=8
-bl602_i2c_transfer: subflag=1, subaddr=0xf7, sublen=1
-bl602_i2c_recvdata: count=8, temp=0x86604d52
-bl602_i2c_recvdata: count=4, temp=0x2a8f503a
-bl602_i2c_transfer: i2c transfer success
-bme280_fetch: temperature=30.110001 °C, pressure=106.937820 mbar, humidity=86.075195 %
-baro0: timestamp:38510000 value1:106.94 value2:30.11
-sensor_pollnotify: Report events: 01
-bme280_reg_read: start=0xf3, size=1
-bl602_i2c_transfer: subflag=1, subaddr=0xf3, sublen=1
-bl602_i2c_recvdata: count=1, temp=0x2a8f5000
-bl602_i2c_transfer: i2c transfer success
-bme280_reg_read: start=0xf7, size=8
-bl602_i2c_transfer: subflag=1, subaddr=0xf7, sublen=1
-bl602_i2c_recvdata: count=8, temp=0x86604d52
-bl602_i2c_recvdata: count=4, temp=0x2a8f503a
-bl602_i2c_transfer: i2c transfer success
-bme280_fetch: temperature=30.110001 °C, pressure=106.937820 mbar, humidity=86.075195 %
-baro0: timestamp:38530000 value1:106.94 value2:30.11
-sensor_pollnotify: Report events: 01
-bme280_reg_read: start=0xf3, size=1
-bl602_i2c_transfer: subflag=1, subaddr=0xf3, sublen=1
-bl602_i2c_recvdata: count=1, temp=0x2a8f5000
-bl602_i2c_transfer: i2c transfer success
-bme280_reg_read: start=0xf7, size=8
-bl602_i2c_transfer: subflag=1, subaddr=0xf7, sublen=1
-bl602_i2c_recvdata: count=8, temp=0x86604d52
-bl602_i2c_recvdata: count=4, temp=0x2a8f503a
-bl602_i2c_transfer: i2c transfer success
-bme280_fetch: temperature=30.110001 °C, pressure=106.937820 mbar, humidity=86.075195 %
-baro0: timestamp:38550000 value1:106.94 value2:30.11
-sensor_pollnotify: Report events: 01
-bme280_reg_read: start=0xf3, size=1
-bl602_i2c_transfer: subflag=1, subaddr=0xf3, sublen=1
-bl602_i2c_recvdata: count=1, temp=0x2a8f5000
-bl602_i2c_transfer: i2c transfer success
-bme280_reg_read: start=0xf7, size=8
-bl602_i2c_transfer: subflag=1, subaddr=0xf7, sublen=1
-bl602_i2c_recvdata: count=8, temp=0x86604d52
-bl602_i2c_recvdata: count=4, temp=0x2a8f503a
-bl602_i2c_transfer: i2c transfer success
-bme280_fetch: temperature=30.110001 °C, pressure=106.937820 mbar, humidity=86.075195 %
-baro0: timestamp:38570000 value1:106.94 value2:30.11
-SensorTest: Received message: baro0, number:10/10
-sensor_ioctl: cmd=a80 arg=00000000
-bme280_activate: TODO enable=0
-
-nsh> sensortest -n 10 baro0
-sensor_ioctl: cmd=a81 arg=4201c394
-bme280_set_interval: TODO period_us=1107411860
-bme280_set_standby: TODO value=5
-sensor_ioctl: cmd=a82 arg=4201c398
-sensor_ioctl: cmd=a80 arg=00000001
-bme280_activate: TODO enable=1
-SensorTest: Test /dev/sensor/baro0 with interval(1000000us), latency(0us)
-sensor_pollnotify: Report events: 01
-bme280_reg_read: start=0xf3, size=1
-bl602_i2c_transfer: subflag=1, subaddr=0xf3, sublen=1
-bl602_i2c_recvdata: count=1, temp=0x2a8f5000
-bl602_i2c_transfer: i2c transfer success
-bme280_reg_read: start=0xf7, size=8
-bl602_i2c_transfer: subflag=1, subaddr=0xf7, sublen=1
-bl602_i2c_recvdata: count=8, temp=0x86f04d52
-bl602_i2c_recvdata: count=4, temp=0x2c8f803b
-bl602_i2c_transfer: i2c transfer success
-bme280_fetch: temperature=30.120001 °C, pressure=106.937500 mbar, humidity=86.087891 %
-baro0: timestamp:47120000 value1:106.94 value2:30.12
-sensor_pollnotify: Report events: 01
-bme280_reg_read: start=0xf3, size=1
-bl602_i2c_transfer: subflag=1, subaddr=0xf3, sublen=1
-bl602_i2c_recvdata: count=1, temp=0x2c8f8000
-bl602_i2c_transfer: i2c transfer success
-bme280_reg_read: start=0xf7, size=8
-bl602_i2c_trasfer: subflag=1, subaddr=0xf7, sublen=1
-bl602_i2c_recvdata: count=8, temp=0x86f04d52
-bl602_i2c_recvdata: count=4, temp=0x2c8f803b
-bl602_i2c_transfer: i2c transfer success
-bme280_fetch: temperature=30.120001 °C, pressure=106.937500 mbar, humidity=86.087891 %
-baro0: timestamp:47140000 value1:106.94 value2:30.12
-sensor_pollnotify: Report events: 01
-bme280_reg_read: start=0xf3, size=1
-bl602_i2c_transfer: subflag=1, subaddr=0xf3, sublen=1
-bl602_i2c_recvdata: count=1, temp=0x2c8f8000
-bl602_i2c_transfer: i2c transfer success
-bme280_reg_read: start=0xf7, size=8
-bl602_i2c_transfer: subflag=1, subaddr=0xf7, sublen=1
-bl602_i2c_recvdata: count=8, temp=0x86f04d52
-bl602_i2c_recvdata: count=4, temp=0x2c8f803b
-bl602_i2c_transfer: i2c transfer success
-bme280_fetch: temperature=30.120001 °C, pressure=106.937500 mbar, humidity=86.087891 %
-baro0: timestamp:47160000 value1:106.94 value2:30.12
-sensor_pollnotify: Report events: 01
-bme280_reg_read: start=0xf3, size=1
-bl602_i2c_transfer: subflag=1, subaddr=0xf3, sublen=1
-bl602_i2c_recvdata: count=1, temp=0x2c8f8000
-bl602_i2c_transfer: i2c transfer success
-bme280_reg_read: start=0xf7, size=8
-bl602_i2c_transfer: subflag=1, subaddr=0xf7, sublen=1
-bl602_i2c_recvdata: count=8, temp=0x86f04d52
-bl602_i2c_recvdata: count=4, temp=0x2c8f803b
-bl602_i2c_transfer: i2c transfer success
-bme280_fetch: temperature=30.120001 °C, pressure=106.937500 mbar, humidity=86.087891 %
-baro0: timestamp:47180000 value1:106.94 value2:30.12
-sensor_pollnotify: Report events: 01
-bme280_reg_read: start=0xf3, size=1
-bl602_i2c_transfer: subflag=1, subaddr=0xf3, sublen=1
-bl602_i2c_recvdata: count=1, temp=0x2c8f8000
-bl602_i2c_transfer: i2c transfer success
-bme280_reg_read: start=0xf7, size=8
-bl602_i2c_transfer: subflag=1, subaddr=0xf7, sublen=1
-bl602_i2c_recvdata: count=8, temp=0x86f04d52
-bl602_i2c_recvdata: count=4, temp=0x2c8f803b
-bl602_i2c_transfer: i2c transfer success
-bme280_fetch: temperature=30.120001 °C, pressure=106.937500 mbar, humidity=86.087891 %
-baro0: timestamp:47200000 value1:106.94 value2:30.12
-sensor_pollnotify: Report events: 01
-bme280_reg_read: start=0xf3, size=1
-bl602_i2c_transfer: subflag=1, subaddr=0xf3, sublen=1
-bl602_i2c_recvdata: count=1, temp=0x2c8f8000
-bl602_i2c_transfer: i2c transfer success
-bme280_reg_read: start=0xf7, size=8
-bl602_i2c_transfer: subflag=1, subaddr=0xf7, sublen=1
-bl602_i2c_recvdata: count=8, temp=0x86f04d52
-bl602_i2c_recvdata: count=4, temp=0x2c8f803b
-bl602_i2c_transfer: i2c transfer success
-bme280_fetch: temperature=30.120001 °C, pressure=106.937500 mbar, humidity=86.087891 %
-baro0: timestamp:47220000 value1:106.94 value2:30.12
-sensor_pollnotify: Report events: 01
-bme280_reg_read: start=0xf3, size=1
-bl602_i2c_transfer: subflag=1, subaddr=0xf3, sublen=1
-bl602_i2c_recvdata: count=1, temp=0x2c8f8000
-bl602_i2c_transfer: i2c transfer success
-bme280_reg_read: start=0xf7, size=8
-bl602_i2c_transfer: subflag=1, subaddr=0xf7, sublen=1
-bl602_i2c_recvdata: count=8, temp=0x86f04d52
-bl602_i2c_recvdata: count=4, temp=0x2c8f803b
-bl602_i2c_transfer: i2c transfer success
-bme280_fetch: temperature=30.120001 °C, pressure=106.937500 mbar, humidity=86.087891 %
-baro0: timestamp:47240000 value1:106.94 value2:30.12
-sensor_pollnotify: Report events: 01
-bme280_reg_read: start=0xf3, size=1
-bl602_i2c_transfer: subflag=1, subaddr=0xf3, sublen=1
-bl602_i2c_recvdata: count=1, temp=0x2c8f8000
-bl602_i2c_transfer: i2c transfer success
-bme280_reg_read: start=0xf7, size=8
-bl602_i2c_transfer: subflag=1, subaddr=0xf7, sublen=1
-bl602_i2c_recvdata: count=8, temp=0x86f04d52
-bl602_i2crecvdata: count=4, temp=0x2c8f803b
-bl602_i2c_transfer: i2c transfer success
-bme280_fetch: temperature=30.120001 °C, pressure=106.937500 mbar, humidity=86.087891 %
-baro0: timestamp:47260000 value1:106.94 value2:30.12
-sensor_pollnotify: Report events: 01
-bme280_reg_read: start=0xf3, size=1
-bl602_i2c_transfer: subflag=1, subaddr=0xf3, sublen=1
-bl602_i2c_recvdata: count=1, temp=0x2c8f8000
-bl602_i2c_transfer: i2c transfer success
-bme280_reg_read: start=0xf7, size=8
-bl602_i2c_transfer: subflag=1, subaddr=0xf7, sublen=1
-bl602_i2c_recvdata: count=8, temp=0x86f04d52
-bl602_i2c_recvdata: count=4, temp=0x2c8f803b
-bl602_i2c_transfer: i2c transfer success
-bme280_fetch: temperature=30.120001 °C, pressure=106.937500 mbar, humidity=86.087891 %
-baro0: timestamp:47280000 value1:106.94 value2:30.12
-sensor_pollnotify: Report events: 01
-bme280_reg_read: start=0xf3, size=1
-bl602_i2c_transfer: subflag=1, subaddr=0xf3, sublen=1
-bl602_i2c_recvdata: count=1, temp=0x2c8f8000
-bl602_i2c_transfer: i2c transfer success
-bme280_reg_read: start=0xf7, size=8
-bl602_i2c_transfer: subflag=1, subaddr=0xf7, ublen=1
-bl602_i2c_recvdata: count=8, temp=0x86f04d52
-bl602_i2c_recvdata: count=4, temp=0x2c8f803b
-bl602_i2c_transfer: i2c transfer success
-bme280_fetch: temperature=30.120001 °C, pressure=106.937500 mbar, humidity=86.087891 %
-baro0: timestamp:47300000 value1:106.94 value2:30.12
-SensorTest: Received message: baro0, number:10/10
-sensor_ioctl: cmd=a80 arg=00000000
-bme280_activate: TODO enable=0
-nsh>
-```
-
 # Combined Barometer and Humidity Sensor
 
 NuttX doesn't have a Sensor Type that supports BME280 Temperature + Humidity + Pressure ... So our NuttX BME280 Driver combines 2 Sensor Types: 1️⃣ Barometer Sensor (Pressure + Temperature) 2️⃣ Humidity Sensor
@@ -1719,141 +1120,292 @@ nsh> ls /dev/sensor
 
 nsh> sensortest -n 1 baro0
 SensorTest: Test /dev/sensor/baro0 with interval(1000000us), latency(0us)
-baro0: timestamp:43760000 value1:1011.29 value2:29.09
+baro0: timestamp:256220000 value1:981.34 value2:28.73
 SensorTest: Received message: baro0, number:1/1
-bl602_i2c_transfer: i2c transfer error, event = 4
 
 nsh> sensortest -n 1 humi0
 SensorTest: Test /dev/sensor/humi0 with interval(1000000us), latency(0us)
-humi0: timestamp:60120000 value:90.58
+humi0: timestamp:553560000 value:92.90
 SensorTest: Received message: humi0, number:1/1
-bl602_i2c_transfer: i2c transfer error, event = 4
 ```
 
-Detailed Log:
+# Output Log
+
+Here's the detailed log when BME280 Driver loads during startup...
 
 ```text
 spi_test_driver_register: devpath=/dev/spitest0, spidev=0
 bme280_register: devno=0
-bme280_register: priv=4201b770, sensor_baro=4201b770, sensor_humi=4201b78c
+bme280_register: priv=0x4201b800, sensor_baro=0x4201b800, sensor_humi=0x4201b81c
+bl602_i2c_transfer: subflag=1, subaddr=0xd0, sublen=1
+bl602_i2c_recvdata: count=1, temp=0x60
+bl602_i2c_transfer: i2c transfer success
 bme280_reg_read: start=0xd0, size=1, buf[0]=0x60
 bme280_chip_init: ID OK
 bme280_reg_write: reg=0xe0, val=0xb6
+bl602_i2c_transfer: subflag=1, subaddr=0xb6e0, sublen=2
+bl602_i2c_recvdata: count=1, temp=0x0
+bl602_i2c_transfer: i2c transfer success
+bl602_i2c_transfer: subflag=1, subaddr=0xf3, sublen=1
+bl602_i2c_recvdata: count=1, temp=0x0
+bl602_i2c_transfer: i2c transfer success
 bme280_reg_read: start=0xf3, size=1, buf[0]=0x00
+bl602_i2c_transfer: subflag=1, subaddr=0x88, sublen=1
+bl602_i2c_recvdata: count=24, temp=0x65e66e97
+bl602_i2c_recvdata: count=20, temp=0x8f990032
+bl602_i2c_recvdata: count=16, temp=0xbd0d581
+bl602_i2c_recvdata: count=12, temp=0xffdb1e71
+bl602_i2c_recvdata: count=8, temp=0x10bdd80a
+bl602_i2c_transfer: i2c transfer success
 bme280_reg_read: start=0x88, size=24
+bl602_i2c_transfer: subflag=1, subaddr=0xa1, sublen=1
+bl602_i2c_recvdata: count=1, temp=0x10bdd84b
+bl602_i2c_transfer: i2c transfer success
 bme280_reg_read: start=0xa1, size=1, buf[0]=0x4b
+bl602_i2c_transfer: subflag=1, subaddr=0xe1, sublen=1
+bl602_i2c_recvdata: count=7, temp=0x14000165
+bl602_i2c_recvdata: count=3, temp=0x141e000b
+bl602_i2c_transfer: i2c transfer success
 bme280_reg_read: start=0xe1, size=7
 bme280_reg_write: reg=0xf2, val=0x05
+bl602_i2c_transfer: subflag=1, subaddr=0x5f2, sublen=2
+bl602_i2c_recvdata: count=1, temp=0x141e0005
+bl602_i2c_transfer: i2c transfer success
 bme280_reg_write: reg=0xf4, val=0x57
+bl602_i2c_transfer: subflag=1,subaddr=0x57f4, sublen=2
+bl602_i2c_recvdata: count=1, temp=0x141e0057
+bl602_i2c_transfer: i2c transfer success
 bme280_reg_write: reg=0xf5, val=0xa8
+bl602_i2c_transfer: subflag=1, subaddr=0xa8f5, sublen=2
+bl602_i2c_recvdata: count=1, temp=0x141e00a8
+bl602_i2c_transfer: i2c transfer success
 bme280_chip_init: "BME280" OK
 bme280_reg_write: reg=0xf4, val=0x54
-bl602_i2c_transfer: i2c transfer error, event = 4
+bl602_i2c_transfer: subflag=1, subaddr=0x54f4, sublen=2
+bl602_i2c_recvdata: count=1, temp=0x141e0054
+bl602_i2c_transfer: i2c transfer success
 sensor_custom_register: Registering /dev/sensor/baro0
 sensor_custom_register: Registering /dev/sensor/humi0
 bme280_register: BME280 driver loaded successfully!
 
 NuttShell (NSH) NuttX-10.2.0-RC0
+nsh>
+```
+
+Here's the detailed log when we read the Barometer Sensor Data from BME280 Driver...
+
+```text
 nsh> sensortest -n 1 baro0
-sensor_ioctl: cmd=a81 arg=4201c424
-bme280_set_interval_baro: period_us=1107412004
-bme280_set_interval_baro: priv=4201b770, sensor_baro=4201b770
+sensor_ioctl: cmd=a81 arg=4201c4b4
+bme280_set_interval_baro: period_us=1000000
+bme280_set_interval_baro: priv=0x4201b800, sensor_baro=0x4201b800
 bme280_set_standby: value=5
+bl602_i2c_transfer: subflag=1, subaddr=0xf5, sublen=1
+bl602_i2c_recvdata: count=1, temp=0xcf9400a8
+bl602_i2c_transfer: i2c transfer success
 bme280_reg_read: start=0xf5, size=1, buf[0]=0xa8
 bme280_reg_write: reg=0xf5, val=0xa8
+bl602_i2c_transfer: subflag=1, subaddr=0xa8f5, sublen=2
+bl602_i2c_recvdata: count=1, temp=0xcf9400a8
+bl602_i2c_transfer: i2c transfer success
+bl602_i2c_transfer: subflag=1, subaddr=0xf5, sublen=1
+bl602_i2c_recvdata: count=1, temp=0xcf9400a8
+bl602_i2c_transfer: i2c transfer success
 bme280_reg_read: start=0xf5, size=1, buf[0]=0xa8
-sensor_ioctl: cmd=a82 arg=4201c428
+sensor_ioctl: cmd=a82 arg=4201c4b8
 sensor_ioctl: cmd=a80 arg=00000001
 bme280_activate_baro: enable=1
-bme280_activate_baro: priv=4201b770, sensor_baro=4201b770
+bme280_activate_baro: priv=0x4201b800, sensor_baro=0x4201b800
+bl602_i2c_transfer: subflag=1, subaddr=0xd0, sublen=1
+bl602_i2c_recvdata: count=1, temp=0xcf940060
+bl602_i2c_transfer: i2c transfer success
 bme280_reg_read: start=0xd0, size=1, buf[0]=0x60
 bme280_chip_init: ID OK
 bme280_reg_write: reg=0xe0, val=0xb6
+bl602_i2c_transfer: subflag=1, subaddr=0xb6e0, sublen=2
+bl602_i2c_recvdata: count=1, temp=0xcf940000
+bl602_i2c_transfer: i2c transfer success
+bl602_i2c_transfer: subflag=1, subaddr=0xf3, sublen=1
+bl602_i2c_recvdata: count=1, temp=0xcf940000
+bl602_i2c_transfer: i2c transfer success
 bme280_reg_read: start=0xf3, size=1, buf[0]=0x00
+bl602_i2c_transfer: subflag=1, subaddr=0x88, sublen=1
+bl602_i2c_recvdata: count=24, temp=0x65e66e97
+bl602_i2c_recvdata: count=20, temp=0x8f990032
+bl602_i2c_recvdata: count=16, temp=0xbd0d581
+bl602_i2c_recvdata: count=12, temp=0xffdb1e71
+bl602_i2c_recvdata: count=8, temp=0x10bdd80a
+bl602_i2c_transfer: i2c transfer success
 bme280_reg_read: start=0x88, size=24
+bl602_i2c_transfer: subflag=1, subaddr=0xa1, sublen=1
+bl602_i2c_recvdata: count=1, temp=0x10bdd84b
+bl602_i2c_transfer: i2c transfer success
 bme280_reg_read: start=0xa1, size=1, buf[0]=0x4b
+bl602_i2c_transfer: subflag=1, subaddr=0xe1, sublen=1
+bl602_i2c_recvdata: count=7, temp=0x14000165
+bl602_i2c_recvdata: count=3, temp=0x141e000b
+bl602_i2c_transfer: i2c transfer success
 bme280_reg_read: start=0xe1, size=7
 bme280_reg_write: reg=0xf2, val=0x05
+bl602_i2c_trasfer: subflag=1, subaddr=0x5f2, sublen=2
+bl602_i2c_recvdata: count=1, temp=0x141e0005
+bl602_i2c_transfer: i2c transfer success
 bme280_reg_write: reg=0xf4, val=0x57
+bl602_i2c_transfer: subflag=1, subaddr=0x57f4, sublen=2
+bl602_i2c_recvdata: count=1, temp=0x141e0057
+bl602_i2c_transfer: i2c transfer success
 bme280_reg_write: reg=0xf5, val=0xa8
+bl602_i2c_transfer: subflag=1, subaddr=0xa8f5, sublen=2
+bl602_i2c_recvdata: count=1, temp=0x141e00a8
+bl602_i2c_transfer: i2c transfer success
 bme280_chip_init: "BME280" OK
 SensorTest: Test /dev/sensor/baro0 with interval(1000000us), latency(0us)
 sensor_pollnotify: Report events: 01
 bme280_fetch_baro: buflen=16
-bme280_fetch_baro: priv=4201b770, sensor_baro=4201b770
+bme280_fetch_baro: priv=0x4201b800, sensor_baro=0x4201b800
+bl602_i2c_transfer: subflag=1, subaddr=0xf3, sublen=1
+bl602_i2c_recvdata: count=1, temp=0x141e000c
+bl602_i2c_transfer: i2c transfer success
 bme280_reg_read: start=0xf3, size=1, buf[0]=0x0c
+bl602_i2c_transfer: subflag=1, subaddr=0xf3, sublen=1
+bl602_i2c_recvdata: count=1, temp=0x141e000c
+bl602_i2c_transfer: i2c transfer success
 bme280_reg_read: start=0xf3, size=1, buf[0]=0x0c
+bl602_i2c_transfer: subflag=1, subaddr=0xf3, sublen=1
+bl602_i2c_recvdata: count=1, temp=0x141e0004
+bl602_i2c_transfer: i2c transfer success
 bme280_reg_read: start=0xf3, size=1, buf[0]=0x04
+bl602_i2c_transfer: subflag=1, subaddr=0xf7, sublen=1
+bl602_i2c_recvdata: count=8, temp=0x8530af51
+bl602_i2c_recvdata: count=4, temp=0x61940024
+bl602_i2c_transfer: i2c transfer success
 bme280_reg_read: start=0xf7, size=8
-bme280_fetch: temperature=30.820000 °C, pressure=1006.847229 mbar, humidity=75.403320 %
-baro0: timestamp:45090000 value1:1006.85 value2:30.82
+bme280_fetch: temperature=28.730000 °C, pressure=981.339661 mbar, humidity=93.127930 %
+baro0: timestamp:256220000 value1:981.34 value2:28.73
 SensorTest: Received message: baro0, number:1/1
 sensor_ioctl: cmd=a80 arg=00000000
 bme280_activate_baro: enable=0
-bme280_activate_baro: priv=4201b770, sensor_baro=4201b770
+bme280_activate_baro: priv=0x4201b800, sensor_baro=0x4201b800
 bme280_reg_write: reg=0xf4, val=0x54
-bl602_i2c_transfer: i2c transfer error, event = 4
-nsh>
-nsh>
+bl602_i2c_transfer: subflag=1, subaddr=0x54f4, sublen=2
+bl602_i2c_recvdata: count=1, temp=0x61940054
+bl602_i2c_transfer: i2c transfer success
+```
+
+Here's the detailed log when we read the Humidity Sensor Data from BME280 Driver...
+
+```text
 nsh> sensortest -n 1 humi0
-sensor_ioctl: cmd=a81 arg=4201c424
-bme280_set_interval_humi: period_us=1107412004
-bme280_set_interval_humi: priv=4201b770, sensor_humi=4201b78c
+sensor_ioctl: cmd=a81 arg=4201c4b4
+bme280_set_interval_humi: period_us=1000000
+bme280_set_interval_humi: priv=0x4201b800, sensor_humi=0x4201b81c
 bme280_set_standby: value=5
+bl602_i2c_transfer: subflag=1, subaddr=0xf5, sublen=1
+bl602_i2c_recvdata: count=1, temp=0x619400a8
+bl602_i2c_transfer: i2c transfer success
 bme280_reg_read: start=0xf5, size=1, buf[0]=0xa8
 bme280_reg_write: reg=0xf5, val=0xa8
+bl602_i2c_transfer: subflag=1, subaddr=0xa8f5, sublen=2
+bl602_i2c_recvdata: cunt=1, temp=0x619400a8
+bl602_i2c_transfer: i2c transfer success
+bl602_i2c_transfer: subflag=1, subaddr=0xf5, sublen=1
+bl602_i2c_recvdata: count=1, temp=0x619400a8
+bl602_i2c_transfer: i2c transfer success
 bme280_reg_read: start=0xf5, size=1, buf[0]=0xa8
-sensor_ioctl: cmd=a82 arg=4201c428
+sensor_ioctl: cmd=a82 arg=4201c4b8
 sensor_ioctl: cmd=a80 arg=00000001
 bme280_activate_humi: enable=1
-bme280_activate_humi: priv=4201b770, sensor_humi=4201b78c
+bme280_activate_humi: priv=0x4201b800, sensor_humi=0x4201b81c
+bl602_i2c_transfer: subflag=1, subaddr=0xd0, sublen=1
+bl602_i2c_recvdata: count=1, temp=0x61940060
+bl602_i2c_transfer: i2c transfer success
 bme280_reg_read: start=0xd0, size=1, buf[0]=0x60
 bme280_chip_init: ID OK
 bme280_reg_write: reg=0xe0, val=0xb6
+bl602_i2c_transfer: subflag=1, subaddr=0xb6e0, sublen=2
+bl602_i2c_recvdata: count=1, temp=0x61940000
+bl602_i2c_transfer: i2c transfer success
+bl602_i2c_transfer: subflag=1, subaddr=0xf3, sublen=1
+bl602_i2c_recvdata: count=1, temp=0x61940000
+bl602_i2c_transfer: i2c transfer success
 bme280_reg_read: start=0xf3, size=1, buf[0]=0x00
+bl602_i2c_transfer: subflag=1, subaddr=0x88, sublen=1
+bl602_i2c_recvdata: count=24, temp=0x65e66e97
+bl602_i2c_recvdata: count=20, temp=0x8f990032
+bl602_i2c_recvdata: count=16, temp=0xbd0d581
+bl602_i2c_recvdata: count=12, temp=0xffdb1e71
+bl602_i2c_recvdata: count=8, temp=0x10bdd80a
+bl602_i2c_transfer: i2c transfer success
 bme280_reg_read: start=0x88, size=24
+bl602_i2c_transfer: subflag=1, subaddr=0xa1, sublen=1
+bl602_i2c_recvdata: count=1, temp=0x10bdd84b
+bl602_i2c_transfer: i2c transfer success
 bme280_reg_read: start=0xa1, size=1, buf[0]=0x4b
+bl602_i2c_transfer: subflag=1, subaddr=0xe1, sublen=1
+bl602_i2c_recvdata: count=7, temp=0x14000165
+bl602_i2c_recvdata: count=3, temp=0x141e000b
+bl02_i2c_transfer: i2c transfer success
 bme280_reg_read: start=0xe1, size=7
 bme280_reg_write: reg=0xf2, val=0x05
+bl602_i2c_transfer: subflag=1, subaddr=0x5f2, sublen=2
+bl602_i2c_recvdata: count=1, temp=0x141e0005
+bl602_i2c_transfer: i2c transfer success
 bme280_reg_write: reg=0xf4, val=0x57
+bl602_i2c_transfer: subflag=1, subaddr=0x57f4, sublen=2
+bl602_i2c_recvdata: count=1, temp=0x141e0057
+bl602_i2c_transfer: i2c transfer success
 bme280_reg_write: reg=0xf5, val=0xa8
+bl602_i2c_transfer: subflag=1, subaddr=0xa8f5, sublen=2
+bl602_i2c_recvdata: count=1, temp=0x141e00a8
+bl602_i2c_transfer: i2c transfer success
 bme280_chip_init: "BME280" OK
 SensorTest: Test /dev/sensor/humi0 with interval(1000000us), latency(0us)
 sensor_pollnotify: Report events: 01
 bme280_fetch_humi: buflen=16
-bme280_fetch_humi: priv=4201b770, sensor_humi=4201b78c
+bme280_fetch_humi: priv=0x4201b800, sensor_humi=0x4201b81c
+bl602_i2c_transfer: subflag=1, subaddr=0xf3, sublen=1
+bl602_i2c_recvdata: count=1, temp=0x141e000c
+bl602_i2c_transfer: i2c transfer success
 bme280_reg_read: start=0xf3, size=1, buf[0]=0x0c
+bl602_i2c_transfer: subflag=1, subaddr=0xf3, sublen=1
+bl602_i2c_recvdata: count=1, temp=0x141e000c
+bl602_i2c_transfer: i2c transfer success
 bme280_reg_read: start=0xf3, size=1, buf[0]=0x0c
+bl602_i2c_transfer: subflag=1, subaddr=0xf3, sublen=1
+bl602_i2c_recvdata: count=1, temp=0x141e0004
+bl602_i2c_transfer: i2c transfer success
 bme280_reg_read: start=0xf3, size=1, buf[0]=0x04
+bl602_i2c_transfer: subflag=1, subaddr=0xf7, sublen=1
+bl602_i2c_recvdata: count=8, temp=0x85b0a451
+l602_i2c_recvdata: count=4, temp=0x3b94000d
+bl602_i2c_transfer: i2c transfer success
 bme280_reg_read: start=0xf7, size=8
-bme280_fetch: temperature=30.820000 °C, pressure=1006.873535 mbar, humidity=75.338867 %
-humi0: timestamp:57950000 value:75.34
+bme280_fetch: temperature=28.610001 °C, pressure=1028.345703 mbar, humidity=92.896484 %
+humi0: timestamp:553560000 value:92.90
 SensorTest: Received message: humi0, number:1/1
 sensor_ioctl: cmd=a80 arg=00000000
 bme280_activate_humi: enable=0
-bme280_activate_humi: priv=4201b770, sensor_humi=4201b78c
+bme280_activate_humi: priv=0x4201b800, sensor_humi=0x4201b81c
 bme280_reg_write: reg=0xf4, val=0x54
-bl602_i2c_transfer: i2c transfer error, event = 4
-nsh>
+bl602_i2c_transfer: subflag=1, subaddr=0x54f4, sublen=2
+bl602_i2c_recvdata: count=1, temp=0x3b940054
+bl602_i2c_transfer: i2c transfer success
 ```
 
-Why does this fail? Perhaps because BME280 is in low power mode?
+# Logic Analyser Output
 
-```text
-## Resume BME280: This is OK
-bme280_reg_write: reg=0xf4, val=0x57
-...
-## Suspend BME280: This fails
-bme280_reg_write: reg=0xf4, val=0x54
-bl602_i2c_transfer: i2c transfer error, event = 4
-```
+Here's the Logic Analyser Output when BME280 Driver loads during startup...
 
-The BMP280 Driver writes a different value to Register F4 and doesn't fail...
+![Top Half](https://lupyuen.github.io/images/bme280-boot1.png)
 
-```text
-## Resume BMP280: This is OK
-bmp280_putreg8: regaddr=0xf4, regval=0x2f
-...
-## Suspend BMP280: This is OK
-bmp280_putreg8: regaddr=0xf4, regval=0x00
-```
+![Bottom Half](https://lupyuen.github.io/images/bme280-boot2.png)
+
+Here's the Logic Analyser Output when we read the Sensor Data from BME280 Driver...
+
+(`sensortest -n 1 baro0` from the previous section)
+
+![Top](https://lupyuen.github.io/images/bme280-read1.png)
+
+![Middle](https://lupyuen.github.io/images/bme280-read2.png)
+
+![Bottom](https://lupyuen.github.io/images/bme280-read3.png)
