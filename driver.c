@@ -52,16 +52,22 @@
 /* Sensor methods */
 
 static int bme280_set_interval_baro(FAR struct sensor_lowerhalf_s *lower,
+                               FAR struct file *filep,
                                FAR unsigned long *period_us);
 static int bme280_set_interval_humi(FAR struct sensor_lowerhalf_s *lower,
+                               FAR struct file *filep,
                                FAR unsigned long *period_us);
 static int bme280_activate_baro(FAR struct sensor_lowerhalf_s *lower,
+                           FAR struct file *filep,
                            bool enable);
 static int bme280_activate_humi(FAR struct sensor_lowerhalf_s *lower,
+                           FAR struct file *filep,
                            bool enable);
 static int bme280_fetch_baro(FAR struct sensor_lowerhalf_s *lower,
+                        FAR struct file *filep,
                         FAR char *buffer, size_t buflen);
 static int bme280_fetch_humi(FAR struct sensor_lowerhalf_s *lower,
+                        FAR struct file *filep,
                         FAR char *buffer, size_t buflen);
 
 /****************************************************************************
@@ -361,6 +367,7 @@ static int bme280_set_interval(FAR struct device *priv,
  ****************************************************************************/
 
 static int bme280_set_interval_baro(FAR struct sensor_lowerhalf_s *lower,
+                               FAR struct file *filep,
                                FAR unsigned long *period_us)
 {
   DEBUGASSERT(lower != NULL);
@@ -388,6 +395,7 @@ static int bme280_set_interval_baro(FAR struct sensor_lowerhalf_s *lower,
  ****************************************************************************/
 
 static int bme280_set_interval_humi(FAR struct sensor_lowerhalf_s *lower,
+                               FAR struct file *filep,
                                FAR unsigned long *period_us)
 {
   DEBUGASSERT(lower != NULL);
@@ -452,6 +460,7 @@ static int bme280_activate(FAR struct device *priv,
  ****************************************************************************/
 
 static int bme280_activate_baro(FAR struct sensor_lowerhalf_s *lower,
+                           FAR struct file *filep,
                            bool enable)
 {
   DEBUGASSERT(lower != NULL);
@@ -479,6 +488,7 @@ static int bme280_activate_baro(FAR struct sensor_lowerhalf_s *lower,
  ****************************************************************************/
 
 static int bme280_activate_humi(FAR struct sensor_lowerhalf_s *lower,
+                           FAR struct file *filep,
                            bool enable)
 {
   DEBUGASSERT(lower != NULL);
@@ -592,6 +602,7 @@ static int bme280_fetch(FAR struct device *priv,
  ****************************************************************************/
 
 static int bme280_fetch_baro(FAR struct sensor_lowerhalf_s *lower,
+                        FAR struct file *filep,
                         FAR char *buffer, size_t buflen)
 {
   DEBUGASSERT(lower != NULL);
@@ -637,6 +648,7 @@ static int bme280_fetch_baro(FAR struct sensor_lowerhalf_s *lower,
  ****************************************************************************/
 
 static int bme280_fetch_humi(FAR struct sensor_lowerhalf_s *lower,
+                        FAR struct file *filep,
                         FAR char *buffer, size_t buflen)
 {
   DEBUGASSERT(lower != NULL);
